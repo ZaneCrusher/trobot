@@ -254,7 +254,7 @@ public class Trobot implements Runnable {
 			if (!elem_spans.isEmpty()) {
 				Element elem_span = (Element) elem_spans.get(0);
 				elem_tr = elem_span.getParent().getParent();
-				List<Element> elem_as = elem_tr.selectNodes("//a[@href]");
+				List<Element> elem_as = elem_span.getParent().elements("a");
 				elem_a = (Element) elem_as.get(0);
 			} else {
 				List<Element> elem_as = page_tbg.selectNodes("//a[@href]");
@@ -290,6 +290,8 @@ public class Trobot implements Runnable {
 		}
 		InfoKarte infoKarte = null;
 		try {
+			infoKarte = new InfoKarte();
+			infoKarte.setUri(uri);
 			Map<String, String> header_params = new LinkedHashMap<String, String>();
 			header_params.put("Cookie", this.cookie);
 			String karte_url = config.getUrl(uri);
@@ -319,9 +321,7 @@ public class Trobot implements Runnable {
 			String[] arr_str = html_karte.substring(p_s_div, p_e_div).split(
 					"\"");
 			String type = arr_str[1];
-			infoKarte = new InfoKarte();
 			infoKarte.setType(type);
-			infoKarte.setUri(uri);
 		} catch (Exception ex) {
 			log.error("parse karte failed!");
 		}
