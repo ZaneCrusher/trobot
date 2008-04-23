@@ -63,11 +63,11 @@ public class Configuration {
 		}
 	}
 
-	protected String getString(String propName) {
+	public String getString(String propName) {
 		return (String) props.get(propName);
 	}
 
-	protected boolean getBoolean(String propName) {
+	public boolean getBoolean(String propName) {
 		return Boolean.parseBoolean(getString(propName));
 	}
 
