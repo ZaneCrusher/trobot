@@ -20,7 +20,7 @@ public class InfoAllianz {
 
 	private String uri;
 
-	protected Map<String, InfoSpieler> spielers = new LinkedHashMap<String, InfoSpieler>();
+	private Map<String, InfoSpieler> spielers = new LinkedHashMap<String, InfoSpieler>();
 
 	/**
 	 * @return the aid
@@ -50,6 +50,10 @@ public class InfoAllianz {
 	 */
 	public void setUri(String uri) {
 		this.uri = uri;
+	}
+
+	public void addSpieler(String no, InfoSpieler spieler) {
+		spielers.put(no, spieler);
 	}
 
 }

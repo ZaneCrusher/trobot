@@ -7,12 +7,7 @@
 package com.javaws.trobot;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
@@ -27,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
-import org.w3c.tidy.Tidy;
 
 /**
  * 
@@ -134,10 +128,10 @@ public class HtmlUtils {
 		return responseText;
 	}
 
-	public Document getResponseDocument(String htmlText) {
+	public Document getResponseDocument(String standardHtmlText) {
 		Document document = null;
 		try {
-			document = DocumentHelper.parseText(tidy(htmlText));
+			document = DocumentHelper.parseText(standardHtmlText);
 		} catch (Exception ex) {
 			log.error("read response document failed!", ex);
 			document = null;
@@ -152,51 +146,6 @@ public class HtmlUtils {
 			cookie = headers_setcookie[0].getValue();
 		}
 		return cookie;
-	}
-
-	/**
-	 * tidy
-	 * 
-	 * @param htmlContents
-	 * @param charset
-	 * @return
-	 */
-	public String tidy(String htmlText) {
-		String tidyText = null;
-		try {
-			Tidy tidy = this.getTidy();
-			tidy.setInputEncoding(Configuration.CHARSET_REMOTE);
-			tidy.setOutputEncoding(Configuration.CHARSET_DEFAULT);
-			InputStream is = new ByteArrayInputStream(htmlText
-					.getBytes(Configuration.CHARSET_REMOTE));
-			OutputStream os = new ByteArrayOutputStream();
-			tidy.parseDOM(is, os);
-			tidyText = os.toString();
-		} catch (Exception ex) {
-			log.error("tidy document failed..", ex);
-		}
-		return tidyText;
-	}
-
-	/**
-	 * get tidy
-	 * 
-	 * @return
-	 */
-	public Tidy getTidy() {
-		Tidy tidy = new Tidy();
-		tidy.setQuiet(true);
-		tidy.setShowWarnings(false);
-		tidy.setIndentContent(true);
-		tidy.setSmartIndent(true);
-		tidy.setIndentAttributes(false);
-		tidy.setWraplen(1024);
-		// output type XHTML
-		// tidy.setXHTML(true);
-		tidy.setXmlOut(true);
-		tidy.setTidyMark(false);
-		tidy.setErrout(new PrintWriter(System.err));
-		return tidy;
 	}
 
 }
