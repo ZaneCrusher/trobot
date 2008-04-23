@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="lib/jtidy-r8-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-3.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/htmlcleaner-1.6.jar"/>
 	<classpathentry kind="output" path=".classes"/>
 </classpath>
