@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================================================
+        Copyright(c) SHANGHAI LANTOP INFORMATION TECHNOLOGIES CO.,LTD.
+                                All right reserved.
+        $Id$
+     ========================================================================= -->
+
+<project name="trobot" basedir="." default="package">
+
+	<!-- Directory structure of the project -->
+	<property name="bin.dir" value="${basedir}/bin" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="out.dir" value="${basedir}/out" />
+
+	<!-- Load Environment Properties -->
+	<property environment="env" />
+	<property name="trobot.home" value="${env.TROBOT_HOME}" />
+
+	<!-- Load Properties -->
+	<property file="${project.home}/.${ant.project.name}-build.properties" />
+	<property file="${project.home}/.build.properties" />
+	<property file="build.properties" />
+	<property file="${lib.dir}/lib.properties" />
+	<property file="${repo.java.lib.dir}/lib.properties" />
+
+	<!-- Source Folder -->
+	<property name="src.java.dir" value="${src.dir}/java" />
+	<property name="src.java.main.dir" value="${src.java.dir}/main" />
+	<property name="src.java.test.dir" value="${src.java.dir}/test" />
+
+	<!-- Build Folder -->
+	<property name="out.java.dir" value="${out.dir}/java" />
+	<property name="out.java.main.dir" value="${out.java.dir}/main" />
+	<property name="out.java.test.dir" value="${out.java.dir}/test" />
+
+	<!-- Utilities -->
+	<patternset id="java.files.pattern" includes="**/*.java" />
+
+	<!-- =================================================================== -->
+	<!-- Classpaths                                                          -->
+	<!-- =================================================================== -->
+
+	<!-- jtidy -->
+	<path id="jtidy.classpath">
+		<fileset dir="${lib.dir}" includes="jtidy-*.jar" />
+	</path>
+
+	<!-- dom4j -->
+	<path id="dom4j.classpath">
+		<fileset dir="${lib.dir}" includes="dom4j-*.jar" />
+		<fileset dir="${lib.dir}" includes="jaxen-*.jar" />
+	</path>
+
+	<!-- commons -->
+	<path id="commons.classpath">
+		<fileset dir="${lib.dir}" includes="commons-*.jar" />
+	</path>
+
+	<!-- junit -->
+	<path id="junit.classpath">
+		<fileset dir="${lib.dir}" includes="junit-*.jar" />
+	</path>
+
+	<!-- build -->
+	<path id="build.classpath">
+		<path refid="commons.classpath" />
+		<path refid="jtidy.classpath" />
+		<path refid="dom4j.classpath" />
+		<fileset dir="${lib.dir}" includes="log4j-*.jar" />
+	</path>
+
+	<!-- out -->
+	<path id="out.java.main.classpath">
+		<path location="${out.java.main.dir}" />
+	</path>
+	<path id="out.java.test.classpath">
+		<path location="${out.java.test.dir}" />
+	</path>
+
+	<!-- =================================================================== -->
+	<!-- Initialize                                                          -->
+	<!-- =================================================================== -->
+
+	<target name="init" description="defines custom tasks">
+		<!-- Set ${bin.dir}/* Excutable -->
+		<chmod perm="+x">
+			<fileset dir="${bin.dir}">
+				<include name="*" />
+			</fileset>
+		</chmod>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Preparing                                                           -->
+	<!-- =================================================================== -->
+
+	<target name="prepare" description="defines custom tasks" depends="init">
+		<mkdir dir="${out.dir}" />
+		<mkdir dir="${out.java.dir}" />
+		<mkdir dir="${out.java.main.dir}" />
+		<mkdir dir="${out.java.test.dir}" />
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Compiling                                                           -->
+	<!-- =================================================================== -->
+	<target name="compile-main"
+	        description="defines custom tasks"
+	        depends="prepare">
+		<echo>Compiling source files...</echo>
+		<javac srcdir="${src.java.main.dir}"
+		       destdir="${out.java.main.dir}"
+		       debug="${compile.debug}"
+		       deprecation="${compile.deprecation}"
+		       optimize="${compile.optimize}"
+		       encoding="${file.encoding}">
+			<classpath>
+				<path refid="build.classpath" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="compile-test"
+	        description="defines custom tasks"
+	        depends="prepare">
+		<echo>Compiling source files...</echo>
+		<javac srcdir="${src.java.test.dir}"
+		       destdir="${out.java.test.dir}"
+		       debug="${compile.debug}"
+		       deprecation="${compile.deprecation}"
+		       optimize="${compile.optimize}"
+		       encoding="${file.encoding}">
+			<classpath>
+				<path refid="build.classpath" />
+				<path refid="junit.classpath" />
+				<path refid="out.java.main.classpath" />
+			</classpath>
+		</javac>
+		<copy todir="${out.java.test.dir}">
+			<fileset dir="${src.java.main.dir}">
+				<include name="*.properties" />
+			</fileset>
+			<fileset dir="${src.java.test.dir}">
+				<include name="*.properties" />
+			</fileset>
+		</copy>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Package                                                             -->
+	<!-- =================================================================== -->
+	<target name="package"
+	        description="defines custom tasks"
+	        depends="compile-main">
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Run                                                             -->
+	<!-- =================================================================== -->
+	<target name="run"
+	        description="defines custom tasks"
+	        depends="compile-main, compile-test">
+		<java classname="com.javaws.trobot.Main" fork="yes">
+			<jvmarg value="-Dfile.encoding=${file.encoding}" />
+			<arg value="start" />
+			<classpath>
+				<path refid="out.java.test.classpath" />
+				<path refid="out.java.main.classpath" />
+				<path refid="build.classpath" />
+				<path refid="junit.classpath" />
+			</classpath>
+		</java>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Test                                                             -->
+	<!-- =================================================================== -->
+	<target name="test"
+	        description="defines custom tasks"
+	        depends="compile-main, compile-test">
+		<junit printsummary="yes" fork="yes" haltonfailure="yes">
+			<jvmarg value="-Dfile.encoding=${file.encoding}" />
+			<classpath>
+				<path refid="out.java.test.classpath" />
+				<path refid="out.java.main.classpath" />
+				<path refid="build.classpath" />
+				<path refid="junit.classpath" />
+			</classpath>
+			<formatter type="plain" />
+
+			<batchtest fork="yes" todir="${out.java.test.dir}">
+				<fileset dir="${src.java.test.dir}">
+					<include name="**/*Test*.java" />
+					<exclude name="**/AllTests.java" />
+				</fileset>
+			</batchtest>
+
+			<!-- <test name="com.javaws.trobot.TrobotTest" /> -->
+
+		</junit>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Create Dist Files           	                                     -->
+	<!-- =================================================================== -->
+
+	<target name="all" depends="compile-main" description="gets all target">
+	</target>
+
+</project>
