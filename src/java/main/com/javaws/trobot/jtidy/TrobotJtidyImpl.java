@@ -27,6 +27,8 @@ import com.javaws.trobot.Trobot;
  * 
  * @author jhsea3do
  * 
+ * @deprecated
+ * 
  */
 public class TrobotJtidyImpl implements Trobot {
 
