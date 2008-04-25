@@ -35,19 +35,32 @@ public class HtmlUtils {
 	private static HtmlUtils self = new HtmlUtils();
 
 	public static HtmlUtils getInstance() {
+
 		return self;
 	}
 
 	private HttpClient httpClient = new HttpClient();
 
+	private String userAgent = null;
+
 	public HttpMethod load(String url) {
+
 		return load(url, null);
 	}
 
+	public void setUserAgent(String userAgent) {
+
+		this.userAgent = userAgent;
+	}
+
 	public HttpMethod load(String url, Map<String, String> headers) {
+
 		HttpMethod method = null;
 		try {
 			GetMethod getMethod = new GetMethod(url);
+			if (null != this.userAgent) {
+				getMethod.setRequestHeader("User-Agent", this.userAgent);
+			}
 			getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
 					new DefaultHttpMethodRetryHandler());
 			if (null != headers) {
@@ -71,10 +84,14 @@ public class HtmlUtils {
 
 	public HttpMethod load(String url, Map<String, String> params,
 			Map<String, String> headers, String methodType) {
+
 		HttpMethod method = null;
 		try {
 			if ("POST".equalsIgnoreCase(methodType)) {
 				PostMethod postMethod = new PostMethod(url);
+				if (null != this.userAgent) {
+					postMethod.setRequestHeader("User-Agent", this.userAgent);
+				}
 				for (String key : params.keySet()) {
 					String value = params.get(key);
 					log.debug("add parameter: key=" + key + ",value=" + value);
@@ -91,6 +108,9 @@ public class HtmlUtils {
 				method = postMethod;
 			} else {
 				GetMethod getMethod = new GetMethod(url);
+				if (null != this.userAgent) {
+					getMethod.setRequestHeader("User-Agent", this.userAgent);
+				}
 				getMethod.getParams().setParameter(
 						HttpMethodParams.RETRY_HANDLER,
 						new DefaultHttpMethodRetryHandler());
@@ -109,6 +129,7 @@ public class HtmlUtils {
 	}
 
 	public String getResponseText(HttpMethod method) {
+
 		String responseText = null;
 		try {
 			InputStreamReader reader = new InputStreamReader(method
@@ -129,6 +150,7 @@ public class HtmlUtils {
 	}
 
 	public Document getResponseDocument(String standardHtmlText) {
+
 		Document document = null;
 		try {
 			document = DocumentHelper.parseText(standardHtmlText);
@@ -140,6 +162,7 @@ public class HtmlUtils {
 	}
 
 	public String getCookieText(HttpMethod method) {
+
 		Header[] headers_setcookie = method.getResponseHeaders("Set-Cookie");
 		String cookie = null;
 		if (null != headers_setcookie) {
