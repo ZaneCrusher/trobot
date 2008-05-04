@@ -28,18 +28,39 @@ import com.javaws.trobot.InfoSpieler;
 import com.javaws.trobot.InfoVillage;
 import com.javaws.trobot.Trobot;
 
+/**
+ * <code>Trobot</code> <a
+ * href="http://htmlcleaner.sourceforge.net/">HtmlCleaner Library</a>
+ * Implementation
+ * 
+ * @author jhsea3do
+ * 
+ */
 public class TrobotHtmlCleanerImpl implements Trobot {
 
+	/**
+	 * Logger
+	 */
 	private static Log log = LogFactory.getLog(TrobotHtmlCleanerImpl.class);
 
+	/**
+	 * Configuration
+	 */
 	private static Configuration config = Configuration.getConfiguration();
 
+	/**
+	 * HtmlUtils Tool
+	 */
 	private static HtmlUtils htmlUtils = HtmlUtils.getInstance();
 
+	// set custom browser user-agent
 	static {
 		htmlUtils.setUserAgent(config.getString("trobot.agent"));
 	}
 
+	/**
+	 * Constructs a <code>TrobotHtmlCleanerImpl</code> from the config file
+	 */
 	public TrobotHtmlCleanerImpl() {
 
 		super();
@@ -48,6 +69,22 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		this.debug = config.isDebug();
 	}
 
+	/**
+	 * Constructs a <code>TrobotHtmlCleanerImpl</code> using the username and
+	 * password
+	 */
+	public TrobotHtmlCleanerImpl(String username, String password) {
+
+		super();
+		this.debug = config.isDebug();
+	}
+
+	/**
+	 * Constructs a <code>TrobotHtmlCleanerImpl</code> from a uri string
+	 * <b>Note:</b> this method is deprecated
+	 * 
+	 * @param uri
+	 */
 	public TrobotHtmlCleanerImpl(String uri) {
 
 		this();
@@ -68,6 +105,14 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 	private String client_time = null;
 
 	private Map<String, InfoVillage> villages = null;
+
+	/**
+	 * @see Trobot#getVillages()
+	 */
+	public Map<String, InfoVillage> getVillages() {
+
+		return villages;
+	}
 
 	public void debug(String message, String fromCharset, String toCharset) {
 
@@ -177,7 +222,6 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 					// debug(">>> elem_nbr_td = " + elem_nbr_td.asXML());
 					Element elem_a = elem_nbr_td.element("a");
 					if (null != elem_a) {
-						// <a href="?newdid=154477">3.¿À¬˛¥Û÷Ì</a>
 						String v_did = elem_a.attributeValue("href")
 								.replaceAll("\\?newdid=", "");
 						String v_name = elem_a.getTextTrim();
@@ -235,13 +279,16 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			for (int i = 0; i < elem_rs_ic_trs.size(); i++) {
 				Element elem_rs_ic_td = (Element) elem_rs_ic_trs.get(i)
 						.elements("td").get(2);
-				String rs_ic = elem_rs_ic_td.element("b").getTextTrim()
-						.replaceAll(".$", "");
+				String rs_ic = elem_rs_ic_td.element("b").getTextTrim();
+				if (!rs_ic.matches("[0-9]$")) {
+					rs_ic = rs_ic.replaceAll(".$", "");
+				}
 				village.setRsIncrease(i, rs_ic);
 			}
 		}
+		// "//div[@id=\"lres0\"]/table/tbody/tr/td[@id]"
 		List<Element> elem_rs_tds = page
-				.selectNodes("//div[@id=\"lres0\"]/table/tbody/tr/td[@id]");
+				.selectNodes("//div[@id=\"lres0\"]//td[@id][@title]");
 		if (null != elem_rs_tds
 				&& elem_rs_tds.size() == InfoVillage.RS_TYPES.length) {
 			for (int i = 0; i < elem_rs_ic_trs.size(); i++) {
@@ -256,7 +303,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			debug(">>> " + InfoVillage.RS_TYPES[i].toLowerCase()
 					+ " status [increase=" + village.getRsIncrease(i)
 					+ ", actual=" + village.getRsActual(i) + ", limit="
-					+ village.getRsLimit(i) + "]");
+					+ village.getRsLimit(i) + ", rate="
+					+ village.getRsRateString(i) + "]");
 		}
 		return village;
 	}
@@ -319,7 +367,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			hc_submit.clean();
 			String xml_submit = hc_submit.getXmlAsString();
 			Document page_submit = htmlUtils.getResponseDocument(xml_submit);
-			this.loadVillages(page_submit);
+			// this.loadVillages(page_submit);
 			this.loadServerTiming(page_submit);
 			// debug(">>> submit response = " + xml_submit);
 			// this.debugHeader(method_submit);
@@ -333,13 +381,97 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		return login_successful;
 	}
 
-	public InfoAllianz allianz(String uri) throws Exception {
+	public InfoAllianz allianz(Document page) throws Exception {
 
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
+	public InfoAllianz allianz(String uri) throws Exception {
+
+		if (null == this.cookie) {
+			if (!this.login()) {
+				return null;
+			}
+		}
+		InfoAllianz infoAllianz = null;
+		try {
+			infoAllianz = new InfoAllianz();
+			infoAllianz.setUri(uri);
+			Map<String, String> header_params = new LinkedHashMap<String, String>();
+			header_params.put("Cookie", this.cookie);
+			String url_allianz = config.getUrl(uri);
+			HttpMethod method_allianz = htmlUtils.load(url_allianz,
+					header_params);
+			String html_allianz = htmlUtils.getResponseText(method_allianz);
+			HtmlCleaner hc_allianz = new HtmlCleaner(html_allianz);
+			hc_allianz.clean();
+			String xml_allianz = hc_allianz.getXmlAsString();
+			// debug(">>> allianz response " + xml_allianz);
+			Document page_allianz = htmlUtils.getResponseDocument(xml_allianz);
+			List<Element> elem_tbgs = page_allianz
+					.selectNodes("//table[@class=\"tbg\"]");
+			Element elem_tbg = elem_tbgs.get(1);
+			Document page_tbg = htmlUtils.getResponseDocument(elem_tbg.asXML());
+			// debug(">>> page tbg " + page_tbg.asXML());
+			List<Element> elem_trs = page_tbg.selectNodes("//table/tbody/tr");
+			for (Element elem_tr : elem_trs) {
+				// debug(">>> tr element " + elem_tr.asXML());
+				if (!"rbg".equals(elem_tr.attributeValue("class"))) {
+					List<Element> elem_tds = elem_tr.elements("td");
+					String user_no = "";
+					String user_name = "";
+					String user_spieler_uri = "";
+					String user_population = "";
+					String user_villages = "";
+					int index = 0;
+					for (Element elem_td : elem_tds) {
+						// debug(">>> td element " + elem_td.asXML());
+						switch (index) {
+						case 0:
+							user_no = elem_td.getTextTrim();
+						case 1:
+							List<Element> elem_as = elem_td.elements("a");
+							if (null != elem_as && !elem_as.isEmpty()) {
+								Element elem_a = (Element) (elem_as.get(0));
+								user_name = elem_a.getTextTrim();
+								user_spieler_uri = "/"
+										+ elem_a.attributeValue("href");
+							}
+						case 2:
+							user_population = elem_td.getTextTrim();
+						case 3:
+							user_villages = elem_td.getTextTrim();
+						}
+						index++;
+					}
+					debug(">>> user_spieler_uri " + user_spieler_uri);
+					InfoSpieler infoSpieler = spieler(user_spieler_uri);
+					infoSpieler.setAllianzRank(user_no);
+					infoSpieler.setUsername(user_name);
+					infoSpieler
+							.setPopulation(Integer.parseInt(user_population));
+					infoSpieler.setVillages(Integer.parseInt(user_villages));
+					infoAllianz.addSpieler(user_no, infoSpieler);
+					if (config.getBoolean("trobot.output")) {
+						log.info(infoSpieler.format());
+					}
+				}
+			}
+		} catch (Exception ex) {
+			log.error("parse allianz failed!");
+			infoAllianz = null;
+		}
+		return infoAllianz;
+	}
+
 	public InfoAllianz allianz(int aid) throws Exception {
+
+		return allianz("/allianz.php?aid=" + aid);
+	}
+
+	public InfoKarte karte(Document page) throws Exception {
 
 		// TODO Auto-generated method stub
 		return null;
@@ -347,26 +479,122 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 	public InfoKarte karte(String uri) throws Exception {
 
-		// TODO Auto-generated method stub
-		return null;
+		if (null == this.cookie) {
+			if (!this.login()) {
+				return null;
+			}
+		}
+		InfoKarte infoKarte = null;
+		try {
+			infoKarte = new InfoKarte();
+			infoKarte.setUri(uri);
+			Map<String, String> header_params = new LinkedHashMap<String, String>();
+			header_params.put("Cookie", this.cookie);
+			String karte_url = config.getUrl(uri);
+			debug("<<< set-cookie = " + this.cookie);
+			HttpMethod method_karte = htmlUtils.load(karte_url, header_params);
+			String html_karte = htmlUtils.getResponseText(method_karte);
+			String keywords_lmid2 = "<div id=\"lmid1\"><div id=\"lmid2\"><div class=\"dname\"><h1>";
+			int p_s_h1_keywords = html_karte.indexOf(keywords_lmid2)
+					+ "<div id=\"lmid1\"><div id=\"lmid2\">".length();
+			int p_e_h1_keywords = html_karte.substring(p_s_h1_keywords)
+					.indexOf("</h1></div>")
+					+ "</h1></div>".length();
+			int p_h1 = p_s_h1_keywords + p_e_h1_keywords;
+			String keywords_dnamec = "<div class=\"dname c\">";
+			int p_s_div = 0;
+			int p_e_div = 0;
+			if (html_karte.substring(p_h1).startsWith(keywords_dnamec)) {
+				p_s_div = html_karte.substring(p_h1).indexOf("</div>")
+						+ "</div>".length() + p_h1;
+				p_e_div = html_karte.substring(p_s_div).indexOf("</div>")
+						+ "</div>".length() + p_s_div;
+			} else {
+				p_s_div = p_h1;
+				p_e_div = html_karte.substring(p_s_div).indexOf("</div>")
+						+ "</div>".length() + p_s_div;
+			}
+			String[] arr_str = html_karte.substring(p_s_div, p_e_div).split(
+					"\"");
+			String type = arr_str[1];
+			infoKarte.setType(type);
+		} catch (Exception ex) {
+			log.error("parse karte failed!");
+		}
+		return infoKarte;
 	}
 
 	public InfoKarte karte(String d, String c) throws Exception {
 
-		// TODO Auto-generated method stub
+		return karte("/karte.php?d=" + d + "&c=" + c);
+	}
+
+	public InfoSpieler spieler(Document page) throws Exception {
+
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public InfoSpieler spieler(String uri) throws Exception {
 
-		// TODO Auto-generated method stub
-		return null;
+		if (null == this.cookie) {
+			if (!this.login()) {
+				return null;
+			}
+		}
+		InfoSpieler infoSpieler = null;
+		try {
+			infoSpieler = new InfoSpieler();
+			infoSpieler.setUri(uri);
+			Map<String, String> header_params = new LinkedHashMap<String, String>();
+			header_params.put("Cookie", this.cookie);
+			String url_spieler = config.getUrl(uri);
+			HttpMethod method_spieler = htmlUtils.load(url_spieler,
+					header_params);
+			String html_spieler = htmlUtils.getResponseText(method_spieler);
+			HtmlCleaner hc_spieler = new HtmlCleaner(html_spieler);
+			hc_spieler.clean();
+			String xml_spieler = hc_spieler.getXmlAsString();
+			// debug(">>> spieler response " + xml_spieler);
+			Document page_spieler = htmlUtils.getResponseDocument(xml_spieler);
+			List<Element> elem_tbgs = page_spieler
+					.selectNodes("//table[@class=\"tbg\"]");
+			Element elem_tbg = elem_tbgs.get(1);
+			Document page_tbg = htmlUtils.getResponseDocument(elem_tbg.asXML());
+			// debug(">>> page tbg " + page_tbg.asXML());
+			List<Element> elem_spans = page_tbg
+					.selectNodes("//span[@class=\"c\"]");
+			Element elem_tr = null;
+			Element elem_a = null;
+			if (!elem_spans.isEmpty()) {
+				Element elem_span = (Element) elem_spans.get(0);
+				elem_tr = elem_span.getParent().getParent();
+				List<Element> elem_as = elem_span.getParent().elements("a");
+				elem_a = (Element) elem_as.get(0);
+			} else {
+				List<Element> elem_as = page_tbg.selectNodes("//a[@href]");
+				elem_a = (Element) elem_as.get(0);
+				elem_tr = elem_a.getParent().getParent();
+			}
+			Element elem_td = (Element) elem_tr.elements("td").get(2);
+			String main_village_position = elem_td.getTextTrim();
+			String pos = main_village_position.replaceAll("\\(", "")
+					.replaceAll("\\)", "");
+			String[] position = pos.split("\\|");
+			InfoKarte mainKarte = karte("/" + elem_a.attributeValue("href"));
+			mainKarte.setPosX(position[0]);
+			mainKarte.setPosY(position[1]);
+			infoSpieler = new InfoSpieler();
+			infoSpieler.setMainKarte(mainKarte);
+			infoSpieler.setUri(uri);
+		} catch (Exception ex) {
+			log.error("parse spieler failed!");
+		}
+		return infoSpieler;
 	}
 
 	public InfoSpieler spieler(int uid) throws Exception {
 
-		// TODO Auto-generated method stub
-		return null;
+		return spieler("/spieler.php?uid=" + uid);
 	}
-
 }

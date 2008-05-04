@@ -21,6 +21,7 @@ import com.javaws.trobot.HtmlUtils;
 import com.javaws.trobot.InfoAllianz;
 import com.javaws.trobot.InfoKarte;
 import com.javaws.trobot.InfoSpieler;
+import com.javaws.trobot.InfoVillage;
 import com.javaws.trobot.Trobot;
 
 /**
@@ -41,6 +42,7 @@ public class TrobotJtidyImpl implements Trobot {
 	private static JtidyUtils jtidyUtils = JtidyUtils.getInstance();
 
 	public TrobotJtidyImpl() {
+
 		super();
 		this.username = config.getSiteUser();
 		this.password = config.getSitePass();
@@ -48,6 +50,7 @@ public class TrobotJtidyImpl implements Trobot {
 	}
 
 	public TrobotJtidyImpl(String uri) {
+
 		this();
 		// this.uri = uri;
 	}
@@ -62,7 +65,28 @@ public class TrobotJtidyImpl implements Trobot {
 
 	private boolean debug = false;
 
+	private Map<String, InfoVillage> villages = null;
+
+	private List<String> notify_messages = null;
+
+	/**
+	 * @see Trobot#getVillages()
+	 */
+	public Map<String, InfoVillage> getVillages() {
+
+		return villages;
+	}
+
+	/**
+	 * @see Trobot#getNotifyMessages()
+	 */
+	public List<String> getNotifyMessages() {
+
+		return notify_messages;
+	}
+
 	public void debug(String message, String fromCharset, String toCharset) {
+
 		if (debug) {
 			try {
 				String line = new String(message.getBytes(fromCharset),
@@ -76,6 +100,7 @@ public class TrobotJtidyImpl implements Trobot {
 	}
 
 	public void debug(String message) {
+
 		if (debug) {
 			System.out.println(message);
 		}
@@ -83,6 +108,7 @@ public class TrobotJtidyImpl implements Trobot {
 
 	@SuppressWarnings("unchecked")
 	public boolean login() throws Exception {
+
 		boolean login_successful = false;
 		try {
 			String url_login = config.getUrl("/login.php");
@@ -149,6 +175,7 @@ public class TrobotJtidyImpl implements Trobot {
 
 	@SuppressWarnings("unchecked")
 	public InfoAllianz allianz(String uri) throws Exception {
+
 		// http://s6.travian.cn/allianz.php?aid=636
 		if (null == this.cookie) {
 			if (!this.login()) {
@@ -230,11 +257,13 @@ public class TrobotJtidyImpl implements Trobot {
 
 	@SuppressWarnings("unchecked")
 	public InfoAllianz allianz(int aid) throws Exception {
+
 		return allianz("/allianz.php?aid=" + aid);
 	}
 
 	@SuppressWarnings("unchecked")
 	public InfoSpieler spieler(String uri) throws Exception {
+
 		if (null == this.cookie) {
 			if (!this.login()) {
 				return null;
@@ -295,10 +324,12 @@ public class TrobotJtidyImpl implements Trobot {
 	}
 
 	public InfoSpieler spieler(int uid) throws Exception {
+
 		return spieler("/spieler.php?uid=" + uid);
 	}
 
 	public InfoKarte karte(String uri) throws Exception {
+
 		if (null == this.cookie) {
 			if (!this.login()) {
 				return null;
@@ -345,6 +376,7 @@ public class TrobotJtidyImpl implements Trobot {
 	}
 
 	public InfoKarte karte(String d, String c) throws Exception {
+
 		return karte("/karte.php?d=" + d + "&c=" + c);
 	}
 

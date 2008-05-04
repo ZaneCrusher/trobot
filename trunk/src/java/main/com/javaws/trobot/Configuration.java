@@ -39,10 +39,12 @@ public class Configuration {
 			.getString("trobot.charset.remote");
 
 	public static Configuration getConfiguration() {
+
 		return self;
 	}
 
 	public Configuration() {
+
 		super();
 		this.load();
 	}
@@ -50,6 +52,7 @@ public class Configuration {
 	private Properties props;
 
 	public void load() {
+
 		if (null == props) {
 			props = new Properties();
 		} else {
@@ -64,38 +67,52 @@ public class Configuration {
 	}
 
 	public String getString(String propName) {
+
 		return (String) props.get(propName);
 	}
 
 	public boolean getBoolean(String propName) {
+
 		return Boolean.parseBoolean(getString(propName));
 	}
 
+	public double getDouble(String propName) {
+
+		return Double.parseDouble(getString(propName));
+	}
+
 	public String getDataPath() {
+
 		return getString("trobot.data.path");
 	}
 
 	public String getSiteHost() {
+
 		return getString("trobot.site.host");
 	}
 
 	public String getSiteUser() {
+
 		return getString("trobot.site.user");
 	}
 
 	public String getSitePass() {
+
 		return getString("trobot.site.pass");
 	}
 
 	public String getBaseUrl() {
+
 		return "http://" + getSiteHost();
 	}
 
 	public String getUrl(String uri) {
+
 		return getBaseUrl() + uri;
 	}
 
 	public boolean isDebug() {
+
 		return getBoolean("trobot.debug");
 	}
 }
