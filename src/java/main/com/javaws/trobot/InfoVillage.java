@@ -6,6 +6,8 @@
 
 package com.javaws.trobot;
 
+import java.text.NumberFormat;
+
 /**
  * 
  * @author jhsea3do
@@ -149,6 +151,26 @@ public class InfoVillage extends InfoKarte {
 	public void setRsLimit(int type, String value) {
 
 		setRsLimit(type, Integer.parseInt(value));
+	}
+
+	/**
+	 * @param type
+	 * @return the rsRate
+	 */
+	public double getRsRate(int type) {
+
+		double actual = (double) getRsActual(type);
+		double limit = (double) getRsLimit(type);
+		return actual / limit;
+	}
+
+	/**
+	 * @param type
+	 * @return the rsRate string
+	 */
+	public String getRsRateString(int type) {
+
+		return NumberFormat.getInstance().format(this.getRsRate(type));
 	}
 
 	/**

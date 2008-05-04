@@ -6,6 +6,8 @@
 
 package com.javaws.trobot;
 
+import java.util.Map;
+
 /**
  * 
  * @author jhsea3do
@@ -30,5 +32,7 @@ public interface Trobot {
 	InfoKarte karte(String uri) throws Exception;
 
 	InfoKarte karte(String d, String c) throws Exception;
+
+	Map<String, InfoVillage> getVillages();
 
 }
