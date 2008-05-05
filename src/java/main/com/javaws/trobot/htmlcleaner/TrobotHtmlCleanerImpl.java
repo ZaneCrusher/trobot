@@ -104,6 +104,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 	private String client_time = null;
 
+	private boolean plus = false;
+
 	private Map<String, InfoVillage> villages = null;
 
 	/**
@@ -112,6 +114,23 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 	public Map<String, InfoVillage> getVillages() {
 
 		return villages;
+	}
+
+	/**
+	 * @return Trobot#isPlus()
+	 */
+	public boolean isPlus() {
+
+		try {
+			if (null == this.cookie) {
+				if (!this.login()) {
+					return false;
+				}
+			}
+			return plus;
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
 	public void debug(String message, String fromCharset, String toCharset) {
@@ -181,13 +200,46 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		this.villages.put(did, v);
 	}
 
-	protected InfoVillage getActiveVillage() {
+	public InfoVillage getActiveVillage() {
 
 		if (null != this.active_village_did && null != this.villages) {
 			return this.villages.get(this.active_village_did);
 		} else {
 			return null;
 		}
+	}
+
+	public void setActiveVillage(String did) throws Exception {
+
+		if (null != this.villages) {
+			InfoVillage village = this.villages.get(did);
+			if (null != village) {
+				Map<String, String> header_params = new LinkedHashMap<String, String>();
+				header_params.put("Cookie", this.cookie);
+				String url_village = config.getUrl("/dorf1.php?newdid=" + did);
+				HttpMethod method_village = htmlUtils.load(url_village,
+						header_params);
+				String html_village = htmlUtils.getResponseText(method_village);
+				this.active_village_did = did;
+				HtmlCleaner hc_village = new HtmlCleaner(html_village);
+				hc_village.clean();
+				String xml_village = hc_village.getXmlAsString();
+				// debug(">>> village response " + xml_allianz);
+				Document page_village = htmlUtils
+						.getResponseDocument(xml_village);
+				InfoVillage _village = loadActiveVillage(page_village);
+				village.copy(_village);
+			}
+		}
+	}
+
+	protected void previewAllVillages() throws Exception {
+
+		for (String did : this.getVillages().keySet()) {
+			this.setActiveVillage(did);
+		}
+		InfoVillage activeVillage = this.getActiveVillage();
+		debug(">>> active village " + activeVillage.getName());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -230,8 +282,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 						village.setName(v_name);
 						if ("active_vl".equals(elem_a.attributeValue("class"))) {
 							this.active_village_did = v_did;
-							InfoVillage v = this.loadActiveVillage(page);
-							village.copy(v);
+							// InfoVillage v = this.loadActiveVillage(page);
+							// village.copy(v);
 						}
 						this.addVillage(village);
 					}
@@ -247,8 +299,6 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			this.addVillage(village);
 		}
 
-		InfoVillage activeVillage = this.getActiveVillage();
-		debug(">>> active village " + activeVillage.getName());
 	}
 
 	protected void loadServerTiming(Document page) throws Exception {
@@ -259,6 +309,20 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		this.client_time = new SimpleDateFormat("HH:mm:ss").format(new Date());
 		debug(">>> server time " + this.server_time);
 		debug("<<< client time " + this.client_time);
+	}
+
+	protected void checkPlus(Document page) throws Exception {
+
+		Element elem_lleft_logo = (Element) page
+				.selectSingleNode("//div[@id=\"lleft\"]/a/img[@class=\"logo\"]");
+		String logo_src = elem_lleft_logo.attributeValue("src");
+		debug(">>> travian logo " + logo_src);
+		if (logo_src.endsWith("travian1.gif")) {
+			this.plus = true;
+		} else { // travian0.gif
+			this.plus = false;
+		}
+		debug("<<< travian plus " + this.plus);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -367,11 +431,13 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			hc_submit.clean();
 			String xml_submit = hc_submit.getXmlAsString();
 			Document page_submit = htmlUtils.getResponseDocument(xml_submit);
-			// this.loadVillages(page_submit);
-			this.loadServerTiming(page_submit);
 			// debug(">>> submit response = " + xml_submit);
 			// this.debugHeader(method_submit);
 			this.refreshCookie(method_submit);
+			this.checkPlus(page_submit);
+			this.loadServerTiming(page_submit);
+			this.loadVillages(page_submit);
+			// this.previewAllVillages();
 			login_successful = true;
 		} catch (Exception ex) {
 			this.cookie = null;

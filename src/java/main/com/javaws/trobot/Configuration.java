@@ -43,15 +43,31 @@ public class Configuration {
 		return self;
 	}
 
+	public static Configuration getConfiguration(String classPath) {
+
+		return new Configuration(classPath);
+	}
+
 	public Configuration() {
 
 		super();
 		this.load();
 	}
 
+	public Configuration(String classPath) {
+
+		super();
+		this.load(classPath);
+	}
+
 	private Properties props;
 
 	public void load() {
+
+		load("/trobot.properties");
+	}
+
+	public void load(String classPath) {
 
 		if (null == props) {
 			props = new Properties();
@@ -59,8 +75,7 @@ public class Configuration {
 			props.clear();
 		}
 		try {
-			props.load(Configuration.class
-					.getResourceAsStream("/trobot.properties"));
+			props.load(Configuration.class.getResourceAsStream(classPath));
 		} catch (IOException ioex) {
 			log.fatal("trobot properties load failed!");
 		}
