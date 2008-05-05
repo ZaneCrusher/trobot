@@ -53,13 +53,16 @@ public class MarketExchangeTask extends TrobotTask {
 			this.init();
 			Trobot trobot = this.getTrobot();
 			if (trobot.login()) {
-				if (trobot.isPlus()) {
-					trobot.setActiveVillage(this.getTaskProps().getProperty(
-							"trobot.task.village.did"));
-					InfoVillage v = trobot.getActiveVillage();
-					log.info("v:" + v.getName());
-				}
-				;
+				trobot.setActiveVillage("131355");
+				InfoVillage v = trobot.getActiveVillage();
+				log.info("v:" + v.getName());
+			//	if (trobot.isPlus()) {
+			//		trobot.setActiveVillage(this.getTaskProps().getProperty(
+			//			"trobot.task.village.did"));
+			//		InfoVillage v = trobot.getActiveVillage();
+			//		log.info("v:" + v.getName());
+			//	}
+			//	;
 			}
 			log.info("run task done ;-)");
 		} catch (Exception ex) {

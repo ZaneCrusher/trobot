@@ -212,11 +212,13 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 	public void setActiveVillage(String did) throws Exception {
 
 		if (null != this.villages) {
-			InfoVillage village = this.villages.get(did);
-			if (null != village) {
+			InfoVillage v = this.villages.get(did);
+			if (null != v) {
 				Map<String, String> header_params = new LinkedHashMap<String, String>();
 				header_params.put("Cookie", this.cookie);
 				String url_village = config.getUrl("/dorf1.php?newdid=" + did);
+				debug("<<< active village [did=" + v.getD() + ", name="
+						+ v.getName() + "]");
 				HttpMethod method_village = htmlUtils.load(url_village,
 						header_params);
 				String html_village = htmlUtils.getResponseText(method_village);
@@ -227,13 +229,13 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 				// debug(">>> village response " + xml_allianz);
 				Document page_village = htmlUtils
 						.getResponseDocument(xml_village);
-				InfoVillage _village = loadActiveVillage(page_village);
-				village.copy(_village);
+				InfoVillage village = loadActiveVillage(page_village);
+				v.copy(village);
 			}
 		}
 	}
 
-	protected void previewAllVillages() throws Exception {
+	public void previewAllVillages() throws Exception {
 
 		for (String did : this.getVillages().keySet()) {
 			this.setActiveVillage(did);

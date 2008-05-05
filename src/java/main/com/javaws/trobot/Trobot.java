@@ -27,6 +27,8 @@ public interface Trobot {
 
 	void setActiveVillage(String did) throws Exception;
 
+	void previewAllVillages() throws Exception;
+
 	InfoAllianz allianz(String uri) throws Exception;
 
 	InfoAllianz allianz(int aid) throws Exception;
