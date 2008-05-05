@@ -21,6 +21,12 @@ public interface Trobot {
 
 	boolean login() throws Exception;
 
+	boolean isPlus();
+
+	InfoVillage getActiveVillage() throws Exception;
+
+	void setActiveVillage(String did) throws Exception;
+
 	InfoAllianz allianz(String uri) throws Exception;
 
 	InfoAllianz allianz(int aid) throws Exception;

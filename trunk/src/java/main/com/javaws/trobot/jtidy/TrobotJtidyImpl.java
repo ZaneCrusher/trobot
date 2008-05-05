@@ -380,4 +380,22 @@ public class TrobotJtidyImpl implements Trobot {
 		return karte("/karte.php?d=" + d + "&c=" + c);
 	}
 
+	public boolean isPlus() {
+
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public InfoVillage getActiveVillage() throws Exception {
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setActiveVillage(String did) throws Exception {
+
+		// TODO Auto-generated method stub
+		
+	}
+
 }

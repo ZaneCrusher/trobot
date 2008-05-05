@@ -17,11 +17,13 @@ public class TrobotTest extends junit.framework.TestCase {
 
 	@Before
 	protected void setUp() throws Exception {
+
 		super.setUp();
 		this.reset();
 	}
 
 	public void reset() throws Exception {
+
 		Configuration config = Configuration.getConfiguration();
 		String driver = config.getString("trobot.driver");
 		System.out.println("reset trobot: " + driver);
@@ -30,30 +32,32 @@ public class TrobotTest extends junit.framework.TestCase {
 
 	@Test
 	public void testLogin() throws Exception {
+
 		Assert.assertTrue(trobot.login());
 	}
 
-	@Test
-	public void testAllianz() throws Exception {
-		Assert.assertNotNull(trobot.allianz(36));
-	}
-
-	@Test
-	public void testSpieler() throws Exception {
-		Assert.assertNotNull(trobot.spieler("/spieler.php?uid=6739"));
-	}
-
-	@Test
-	public void testBadSpieler() throws Exception {
-		try {
-			trobot.spieler("/spiele.php?uid=6739");
-		} catch (Exception ex) {
-			Assert.assertNotNull(ex);
-		}
-	}
+	// public void testAllianz() throws Exception {
+	//
+	// Assert.assertNotNull(trobot.allianz(36));
+	// }
+	//
+	// public void testSpieler() throws Exception {
+	//
+	// Assert.assertNotNull(trobot.spieler("/spieler.php?uid=6739"));
+	// }
+	//
+	// public void testBadSpieler() throws Exception {
+	//
+	// try {
+	// trobot.spieler("/spiele.php?uid=6739");
+	// } catch (Exception ex) {
+	// Assert.assertNotNull(ex);
+	// }
+	// }
 
 	@After
 	protected void tearDown() throws Exception {
+
 		super.tearDown();
 	}
 
