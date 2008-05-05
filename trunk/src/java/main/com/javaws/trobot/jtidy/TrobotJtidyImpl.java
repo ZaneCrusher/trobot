@@ -398,4 +398,10 @@ public class TrobotJtidyImpl implements Trobot {
 		
 	}
 
+	public void previewAllVillages() throws Exception {
+
+		// TODO Auto-generated method stub
+		
+	}
+
 }
