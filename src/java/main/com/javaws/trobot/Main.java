@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.javaws.trobot.task.BatchPrivateMessageTask;
 import com.javaws.trobot.task.MarketExchangeTask;
 import com.javaws.trobot.task.TrobotTask;
 
@@ -31,7 +32,7 @@ public class Main {
 
 		String driver = config.getString("trobot.driver");
 		Trobot trobot = (Trobot) Class.forName(driver).newInstance();
-		TrobotTask task = new MarketExchangeTask(trobot);
+		TrobotTask task = new BatchPrivateMessageTask(trobot);
 		Timer timer = new Timer();
 		// timer.schedule(new TimerTask() {
 		//

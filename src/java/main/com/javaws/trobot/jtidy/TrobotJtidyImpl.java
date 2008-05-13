@@ -77,6 +77,11 @@ public class TrobotJtidyImpl implements Trobot {
 		return villages;
 	}
 
+	public String getCookie() {
+
+		return cookie;
+	}
+
 	/**
 	 * @see Trobot#getNotifyMessages()
 	 */
@@ -395,13 +400,13 @@ public class TrobotJtidyImpl implements Trobot {
 	public void setActiveVillage(String did) throws Exception {
 
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void previewAllVillages() throws Exception {
 
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
