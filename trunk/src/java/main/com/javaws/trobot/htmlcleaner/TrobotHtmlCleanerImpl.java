@@ -116,6 +116,11 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		return villages;
 	}
 
+	public String getCookie() {
+
+		return cookie;
+	}
+
 	/**
 	 * @return Trobot#isPlus()
 	 */

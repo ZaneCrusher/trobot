@@ -23,6 +23,8 @@ public interface Trobot {
 
 	boolean isPlus();
 
+	String getCookie();
+
 	InfoVillage getActiveVillage() throws Exception;
 
 	void setActiveVillage(String did) throws Exception;
