@@ -498,6 +498,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 					String user_spieler_uri = "";
 					String user_population = "";
 					String user_villages = "";
+					String user_status = "";
 					int index = 0;
 					for (Element elem_td : elem_tds) {
 						// debug(">>> td element " + elem_td.asXML());
@@ -516,6 +517,16 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 							user_population = elem_td.getTextTrim();
 						case 3:
 							user_villages = elem_td.getTextTrim();
+						case 4:
+							List<Element> elem_imgs = elem_td.elements("img");
+							if (null != elem_imgs && !elem_imgs.isEmpty()) {
+								Element elem_img = (Element) (elem_imgs.get(0));
+								String elem_img_src = elem_img
+										.attributeValue("src");
+								user_status = elem_img_src.replaceAll(
+										"img/un/a/b", "").replaceAll("\\.gif",
+										"");
+							}
 						}
 						index++;
 					}
@@ -526,6 +537,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 					infoSpieler
 							.setPopulation(Integer.parseInt(user_population));
 					infoSpieler.setVillages(Integer.parseInt(user_villages));
+					infoSpieler.setStatus(user_status);
 					infoAllianz.addSpieler(user_no, infoSpieler);
 					if (config.getBoolean("trobot.output")) {
 						log.info(infoSpieler.format());
