@@ -26,16 +26,29 @@ public class InfoSpieler {
 
 	private String username;
 
+	private String status;
+
 	private int villages;
 
 	private int population;
 
 	protected Map<String, InfoKarte> kartes = new LinkedHashMap<String, InfoKarte>();
 
+	public static final String STATUS_BLUE = "1";
+
+	public static final String STATUS_GREEN = "2";
+
+	public static final String STATUS_YELLOW = "3";
+
+	public static final String STATUS_RED = "4";
+
+	public static final String STATUS_GRAY = "5";
+
 	/**
 	 * @return the mainKarte
 	 */
 	public InfoKarte getMainKarte() {
+
 		return mainKarte;
 	}
 
@@ -44,6 +57,7 @@ public class InfoSpieler {
 	 *            the mainKarte to set
 	 */
 	public void setMainKarte(InfoKarte mainKarte) {
+
 		this.mainKarte = mainKarte;
 	}
 
@@ -51,6 +65,7 @@ public class InfoSpieler {
 	 * @return the uid
 	 */
 	public String getUid() {
+
 		return uid;
 	}
 
@@ -59,6 +74,7 @@ public class InfoSpieler {
 	 *            the uid to set
 	 */
 	public void setUid(String uid) {
+
 		this.uid = uid;
 	}
 
@@ -66,6 +82,7 @@ public class InfoSpieler {
 	 * @return the uri
 	 */
 	public String getUri() {
+
 		return uri;
 	}
 
@@ -74,6 +91,7 @@ public class InfoSpieler {
 	 *            the uri to set
 	 */
 	public void setUri(String uri) {
+
 		this.uri = uri;
 	}
 
@@ -81,6 +99,7 @@ public class InfoSpieler {
 	 * @return the allianzRank
 	 */
 	public String getAllianzRank() {
+
 		return allianzRank;
 	}
 
@@ -89,6 +108,7 @@ public class InfoSpieler {
 	 *            the allianzRank to set
 	 */
 	public void setAllianzRank(String allianzRank) {
+
 		this.allianzRank = allianzRank;
 	}
 
@@ -96,6 +116,7 @@ public class InfoSpieler {
 	 * @return the population
 	 */
 	public int getPopulation() {
+
 		return population;
 	}
 
@@ -104,6 +125,7 @@ public class InfoSpieler {
 	 *            the population to set
 	 */
 	public void setPopulation(int population) {
+
 		this.population = population;
 	}
 
@@ -111,6 +133,7 @@ public class InfoSpieler {
 	 * @return the username
 	 */
 	public String getUsername() {
+
 		return username;
 	}
 
@@ -119,13 +142,33 @@ public class InfoSpieler {
 	 *            the username to set
 	 */
 	public void setUsername(String username) {
+
 		this.username = username;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getStatus() {
+
+		return status;
+	}
+
+	/**
+	 * 
+	 * @param status
+	 */
+	public void setStatus(String status) {
+
+		this.status = status;
 	}
 
 	/**
 	 * @return the villages
 	 */
 	public int getVillages() {
+
 		return villages;
 	}
 
@@ -134,10 +177,12 @@ public class InfoSpieler {
 	 *            the villages to set
 	 */
 	public void setVillages(int villages) {
+
 		this.villages = villages;
 	}
 
 	public String format() {
+
 		StringBuffer sb = new StringBuffer("");
 		sb.append(allianzRank);
 		sb.append("\t");
@@ -152,6 +197,8 @@ public class InfoSpieler {
 		sb.append(villages);
 		sb.append("\t");
 		sb.append(population);
+		sb.append("\t");
+		sb.append(status);
 		return sb.toString();
 	}
 
