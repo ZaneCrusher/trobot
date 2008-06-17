@@ -26,6 +26,7 @@ public class InfoAllianz {
 	 * @return the aid
 	 */
 	public String getAid() {
+
 		return aid;
 	}
 
@@ -34,6 +35,7 @@ public class InfoAllianz {
 	 *            the aid to set
 	 */
 	public void setAid(String aid) {
+
 		this.aid = aid;
 	}
 
@@ -41,6 +43,7 @@ public class InfoAllianz {
 	 * @return the uri
 	 */
 	public String getUri() {
+
 		return uri;
 	}
 
@@ -49,10 +52,12 @@ public class InfoAllianz {
 	 *            the uri to set
 	 */
 	public void setUri(String uri) {
+
 		this.uri = uri;
 	}
 
 	public void addSpieler(String no, InfoSpieler spieler) {
+
 		spielers.put(no, spieler);
 	}
 

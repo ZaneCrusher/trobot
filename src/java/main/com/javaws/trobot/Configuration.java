@@ -21,7 +21,7 @@ public class Configuration {
 
 	private static Log log = LogFactory.getLog(Configuration.class);
 
-	private static Configuration self = new Configuration();
+	private static Configuration conf_default = new Configuration();
 
 	public static final String LINE_SEPARATOR = System
 			.getProperty("line.separator");
@@ -29,18 +29,15 @@ public class Configuration {
 	public static final String FILE_SEPARATOR = System
 			.getProperty("file.separator");
 
-	public static final String CHARSET_SYSTEM = System
-			.getProperty("file.encoding");
+	public static final int CHARSET_SYSTEM_ID = 0;
 
-	public static final String CHARSET_DEFAULT = self
-			.getString("trobot.charset.default");
+	public static final int CHARSET_DEFAULT_ID = 1;
 
-	public static final String CHARSET_REMOTE = self
-			.getString("trobot.charset.remote");
+	public static final int CHARSET_REMOTE_ID = 2;
 
 	public static Configuration getConfiguration() {
 
-		return self;
+		return conf_default;
 	}
 
 	public static Configuration getConfiguration(String classPath) {
@@ -51,83 +48,93 @@ public class Configuration {
 	public Configuration() {
 
 		super();
-		this.load();
+		this.init();
 	}
 
 	public Configuration(String classPath) {
 
 		super();
+		this.init();
 		this.load(classPath);
-	}
-
-	private Properties props;
-
-	public void load() {
-
-		load("/trobot.properties");
 	}
 
 	public void load(String classPath) {
 
-		if (null == props) {
-			props = new Properties();
-		} else {
-			props.clear();
-		}
 		try {
-			props.load(Configuration.class.getResourceAsStream(classPath));
+			log.info("load trobot properties: " + classPath + " ...");
+			this.props.load(Configuration.class.getResourceAsStream(classPath));
 		} catch (IOException ioex) {
 			log.fatal("trobot properties load failed!");
 		}
 	}
 
+	public void init() {
+
+		if (null == props) {
+			this.props = new Properties();
+		} else {
+			this.props.clear();
+		}
+		this.load("/trobot.properties");
+	}
+
 	public String getString(String propName) {
 
-		return (String) props.get(propName);
+		return (String) this.props.get(propName);
 	}
 
 	public boolean getBoolean(String propName) {
 
-		return Boolean.parseBoolean(getString(propName));
+		return Boolean.parseBoolean(this.getString(propName));
 	}
 
 	public double getDouble(String propName) {
 
-		return Double.parseDouble(getString(propName));
+		return Double.parseDouble(this.getString(propName));
 	}
 
 	public String getDataPath() {
 
-		return getString("trobot.data.path");
+		return this.getString("trobot.data.path");
 	}
 
 	public String getSiteHost() {
 
-		return getString("trobot.site.host");
+		return this.getString("trobot.site.host");
 	}
 
 	public String getSiteUser() {
 
-		return getString("trobot.site.user");
+		return this.getString("trobot.site.user");
 	}
 
 	public String getSitePass() {
 
-		return getString("trobot.site.pass");
+		return this.getString("trobot.site.pass");
 	}
 
 	public String getBaseUrl() {
 
-		return "http://" + getSiteHost();
+		return "http://" + this.getSiteHost();
 	}
 
 	public String getUrl(String uri) {
 
-		return getBaseUrl() + uri;
+		return this.getBaseUrl() + uri;
 	}
 
 	public boolean isDebug() {
 
-		return getBoolean("trobot.debug");
+		return this.getBoolean("trobot.debug");
 	}
+
+	public String[] getCharsets() {
+
+		return new String[] { System.getProperty("file.encoding"), // CHARSET_SYSTEM
+				this.getString("trobot.charset.default"), // CHARSET_DEFAULT
+				this.getString("trobot.charset.remote") // CHARSET_REMOTE
+		};
+	}
+
+	private Properties props;
 }

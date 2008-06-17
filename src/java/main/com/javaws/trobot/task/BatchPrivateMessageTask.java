@@ -1,15 +1,17 @@
+/*
+ * ~ TROBOT ~
+ * 
+ * $Id: TrobotHtmlCleanerImpl.java 27 2008-05-18 17:54:09Z jhsea3do $
+ */
 
 package com.javaws.trobot.task;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dom4j.Element;
 import org.htmlcleaner.HtmlCleaner;
 
 import com.javaws.trobot.Configuration;
@@ -25,32 +27,7 @@ public class BatchPrivateMessageTask extends TrobotTask {
 	/**
 	 * HtmlUtils Tool
 	 */
-	private static HtmlUtils htmlUtils = HtmlUtils.getInstance();
-
-	/**
-	 * @see TrobotTask#TrobotTask(Trobot, Properties);
-	 */
-	public BatchPrivateMessageTask(Trobot trobot, Properties taskProps) {
-
-		super(trobot, taskProps);
-	}
-
-	/**
-	 * @see TrobotTask#TrobotTask(Trobot);
-	 */
-	public BatchPrivateMessageTask(Trobot trobot) {
-
-		super(trobot);
-	}
-
-	private void init() throws Exception {
-
-		if (null == this.getTrobot()) {
-			String driver = config.getString("trobot.driver");
-			Trobot trobot = (Trobot) Class.forName(driver).newInstance();
-			this.setTrobot(trobot);
-		}
-	}
+	private static HtmlUtils htmlUtils = new HtmlUtils();
 
 	public void send(String username, String subject, String message) {
 
@@ -68,8 +45,9 @@ public class BatchPrivateMessageTask extends TrobotTask {
 			for (String key : input_params.keySet()) {
 				String debug_value = input_params.get(key);
 				trobot.debug("<<< post param [key=" + key + ", value="
-						+ debug_value + "]", Configuration.CHARSET_DEFAULT,
-						Configuration.CHARSET_REMOTE);
+						+ debug_value + "]",
+						config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+						config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 				// trobot.debug("<<< post param [key=" + key + ", value="
 				// + debug_value + "]", Configuration.CHARSET_DEFAULT,
 				// Configuration.CHARSET_REMOTE);
@@ -78,7 +56,8 @@ public class BatchPrivateMessageTask extends TrobotTask {
 			header_params.put("Cookie", trobot.getCookie());
 			HttpMethod method_pm = htmlUtils.load(url_pm, input_params,
 					header_params, "post");
-			String html_pm = htmlUtils.getResponseText(method_pm);
+			String html_pm = htmlUtils.getResponseText(method_pm, config
+					.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			HtmlCleaner hc_pm = new HtmlCleaner(html_pm);
 			hc_pm.clean();
 			/*
@@ -110,8 +89,9 @@ public class BatchPrivateMessageTask extends TrobotTask {
 			for (String key : input_params.keySet()) {
 				String debug_value = input_params.get(key);
 				trobot.debug("<<< post param [key=" + key + ", value="
-						+ debug_value + "]", Configuration.CHARSET_DEFAULT,
-						Configuration.CHARSET_REMOTE);
+						+ debug_value + "]",
+						config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+						config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 				// trobot.debug("<<< post param [key=" + key + ", value="
 				// + debug_value + "]", Configuration.CHARSET_DEFAULT,
 				// Configuration.CHARSET_REMOTE);
@@ -120,7 +100,8 @@ public class BatchPrivateMessageTask extends TrobotTask {
 			header_params.put("Cookie", trobot.getCookie());
 			HttpMethod method_invite = htmlUtils.load(url_invite, input_params,
 					header_params, "post");
-			String html_invite = htmlUtils.getResponseText(method_invite);
+			String html_invite = htmlUtils.getResponseText(method_invite,
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			HtmlCleaner hc_invite = new HtmlCleaner(html_invite);
 			hc_invite.clean();
 		} catch (Exception ex) {
@@ -133,9 +114,9 @@ public class BatchPrivateMessageTask extends TrobotTask {
 	public void run() {
 
 		try {
-			this.init();
 			Trobot trobot = this.getTrobot();
 			if (trobot.login()) {
+				@SuppressWarnings("unused")
 				String[] az = new String[] { "东方不败", "circle", "zizou",
 						"血契-亡灵的复仇", "小白‰", "天狼", "言灵雪", "dodo!!!", "脑震荡的猪",
 						"dola", "ytshuye", "克利斯", "黛大人", "blackc", "矿工舍",

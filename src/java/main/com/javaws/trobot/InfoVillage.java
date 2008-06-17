@@ -157,7 +157,7 @@ public class InfoVillage extends InfoKarte {
 	 * @param type
 	 * @return the rsRate
 	 */
-	public double getRsRate(int type) {
+	public double getRsRate(int type) throws ArithmeticException {
 
 		double actual = (double) getRsActual(type);
 		double limit = (double) getRsLimit(type);
@@ -166,15 +166,50 @@ public class InfoVillage extends InfoKarte {
 
 	/**
 	 * @param type
+	 * @return the rsRate
+	 */
+	public double getRsTime(int type) throws ArithmeticException {
+
+		double actual = (double) getRsActual(type);
+		double limit = (double) getRsLimit(type);
+		double increase = (double) getRsIncrease(type);
+		double time = (increase > 0) ? (limit - actual) / increase
+				: (actual / increase);
+		return time;
+	}
+
+	/**
+	 * @param type
 	 * @return the rsRate string
 	 */
 	public String getRsRateString(int type) {
 
-		return NumberFormat.getInstance().format(this.getRsRate(type));
+		String value = null;
+		try {
+			value = NumberFormat.getInstance().format(this.getRsRate(type));
+		} catch (ArithmeticException aex) {
+			value = "infinity";
+		}
+		return value;
 	}
 
 	/**
-	 * copy properties from anohter village
+	 * @param type
+	 * @return the rsRate string
+	 */
+	public String getRsTimeString(int type) {
+
+		String value = null;
+		try {
+			value = NumberFormat.getInstance().format(this.getRsTime(type));
+		} catch (ArithmeticException aex) {
+			value = "infinity";
+		}
+		return value;
+	}
+
+	/**
+	 * copy properties from another village
 	 * 
 	 * @param village
 	 */

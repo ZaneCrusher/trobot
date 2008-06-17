@@ -6,11 +6,17 @@
 
 package com.javaws.trobot.htmlcleaner;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
@@ -27,6 +33,7 @@ import com.javaws.trobot.InfoKarte;
 import com.javaws.trobot.InfoSpieler;
 import com.javaws.trobot.InfoVillage;
 import com.javaws.trobot.Trobot;
+import com.javaws.trobot.task.TrobotTask;
 
 /**
  * <code>Trobot</code> <a
@@ -38,25 +45,47 @@ import com.javaws.trobot.Trobot;
  */
 public class TrobotHtmlCleanerImpl implements Trobot {
 
-	/**
-	 * Logger
-	 */
+	// Logger
 	private static Log log = LogFactory.getLog(TrobotHtmlCleanerImpl.class);
 
-	/**
-	 * Configuration
-	 */
-	private static Configuration config = Configuration.getConfiguration();
+	// Configuration
+	private Configuration config = Configuration.getConfiguration();
 
-	/**
-	 * HtmlUtils Tool
-	 */
-	private static HtmlUtils htmlUtils = HtmlUtils.getInstance();
+	// HtmlUtils Tool
+	private HtmlUtils htmlUtils = new HtmlUtils();
 
-	// set custom browser user-agent
-	static {
-		htmlUtils.setUserAgent(config.getString("trobot.agent"));
-	}
+	// Writer
+	private Writer writer = new OutputStreamWriter(System.out);
+
+	// Trobot ID
+	private String id = null;
+
+	// Trobot Cookie
+	private String cookie = null;
+
+	// Trobot Debug Mode
+	private boolean debug = false;
+
+	// Server Timing
+	private String server_time = null;
+
+	// Client Timing
+	private String client_time = null;
+
+	// Account Username
+	private String username = "no_user";
+
+	// Account Password
+	private String password = "no_pass";
+
+	// Account Plus!
+	private boolean plus = false;
+
+	// Account Villages
+	private Map<String, InfoVillage> villages = null;
+
+	// Current Active Village Did
+	private String active_village_did = null;
 
 	/**
 	 * Constructs a <code>TrobotHtmlCleanerImpl</code> from the config file
@@ -64,49 +93,92 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 	public TrobotHtmlCleanerImpl() {
 
 		super();
-		this.username = config.getSiteUser();
-		this.password = config.getSitePass();
-		this.debug = config.isDebug();
 	}
 
 	/**
-	 * Constructs a <code>TrobotHtmlCleanerImpl</code> using the username and
-	 * password
+	 * @return the config
 	 */
-	public TrobotHtmlCleanerImpl(String username, String password) {
+	public Configuration getConfig() {
 
-		super();
-		this.debug = config.isDebug();
+		return config;
 	}
 
 	/**
-	 * Constructs a <code>TrobotHtmlCleanerImpl</code> from a uri string
-	 * <b>Note:</b> this method is deprecated
-	 * 
-	 * @param uri
+	 * @param config
+	 *            the config to set
 	 */
-	public TrobotHtmlCleanerImpl(String uri) {
+	public void setConfig(Configuration config) {
 
-		this();
+		this.config = config;
+
 	}
 
-	private String cookie = null;
+	/**
+	 * @return the writer
+	 */
+	public Writer getWriter() {
 
-	private String username = "no_user";
+		return writer;
+	}
 
-	private String password = "no_pass";
+	/**
+	 * @param writer
+	 *            the writer to set
+	 */
+	public void setWriter(Writer writer) {
 
-	private boolean debug = false;
+		this.writer = writer;
+	}
 
-	private String active_village_did = null;
+	/**
+	 * @return the id
+	 */
+	public String getId() {
 
-	private String server_time = null;
+		return id;
+	}
 
-	private String client_time = null;
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(String id) {
 
-	private boolean plus = false;
+		this.id = id;
+	}
 
-	private Map<String, InfoVillage> villages = null;
+	public void init() throws Exception {
+
+		// load trobot setting
+		this.config.load("/trobot-" + this.id + ".properties");
+		// set user agent
+		this.htmlUtils.setUserAgent(this.config.getString("trobot.agent"));
+		// set account username
+		this.username = this.config.getSiteUser();
+		// set account password
+		this.password = this.config.getSitePass();
+		// set debug mode
+		this.debug = this.config.isDebug();
+		// set task properties
+		if (null != this.config.getString("trobot.task")) {
+			this.config.load(this.config.getString("trobot.task"));
+		}
+		// set output
+		if (this.config.getBoolean("trobot.output")) {
+			String outpath = this.config.getString("trobot.data.home");
+			String filename = "/trobot-" + this.id + ".log";
+			String filepath = outpath + System.getProperty("file.separator")
+					+ filename;
+			File outfile = new File(filepath);
+			if (!outfile.exists()) {
+				if (outfile.createNewFile()) {
+					log.info("create file " + filepath);
+					FileWriter fw = new FileWriter(outfile);
+					this.writer = fw;
+				}
+			}
+		}
+	}
 
 	/**
 	 * @see Trobot#getVillages()
@@ -140,22 +212,35 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 	public void debug(String message, String fromCharset, String toCharset) {
 
+		String line = null;
+
 		if (debug) {
 			try {
-				String line = new String(message.getBytes(fromCharset),
-						toCharset);
-				System.out.println(line);
-			} catch (Exception ex) {
+				line = new String(message.getBytes(fromCharset), toCharset);
+			} catch (UnsupportedEncodingException ex) {
 				log.warn("convert message failed!");
-				System.out.println(message);
+				line = message;
 			}
 		}
+
+		this.debug(line);
 	}
 
 	public void debug(String message) {
 
+		Writer writer = this.getWriter();
+
 		if (debug) {
-			System.out.println(message);
+			try {
+				String line = message + System.getProperty("line.separator");
+				if (writer instanceof FileWriter) {
+					System.out.print(line);
+				}
+				writer.write(line);
+				writer.flush();
+			} catch (Exception ex) {
+				log.warn("write message failed!");
+			}
 		}
 	}
 
@@ -226,7 +311,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 						+ v.getName() + "]");
 				HttpMethod method_village = htmlUtils.load(url_village,
 						header_params);
-				String html_village = htmlUtils.getResponseText(method_village);
+				String html_village = htmlUtils.getResponseText(method_village,
+						config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 				this.active_village_did = did;
 				HtmlCleaner hc_village = new HtmlCleaner(html_village);
 				hc_village.clean();
@@ -238,15 +324,6 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 				v.copy(village);
 			}
 		}
-	}
-
-	public void previewAllVillages() throws Exception {
-
-		for (String did : this.getVillages().keySet()) {
-			this.setActiveVillage(did);
-		}
-		InfoVillage activeVillage = this.getActiveVillage();
-		debug(">>> active village " + activeVillage.getName());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -375,7 +452,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 					+ " status [increase=" + village.getRsIncrease(i)
 					+ ", actual=" + village.getRsActual(i) + ", limit="
 					+ village.getRsLimit(i) + ", rate="
-					+ village.getRsRateString(i) + "]");
+					+ village.getRsRateString(i) + ", time="
+					+ village.getRsTimeString(i) + "]");
 		}
 		return village;
 	}
@@ -388,11 +466,14 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			String url_login = config.getUrl("/login.php");
 			debug("<<< login from " + url_login);
 			debug("<<< login username " + this.username,
-					Configuration.CHARSET_DEFAULT, Configuration.CHARSET_REMOTE);
+					config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			debug("<<< login password " + this.password.replaceAll(".", "*"),
-					Configuration.CHARSET_DEFAULT, Configuration.CHARSET_REMOTE);
+					config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			String html_login = htmlUtils.getResponseText(htmlUtils
-					.load(url_login));
+					.load(url_login),
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			HtmlCleaner hc_login = new HtmlCleaner(html_login);
 			hc_login.clean();
 			String xml_login = hc_login.getXmlAsString();
@@ -426,14 +507,16 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 					}
 				}
 				debug("<<< post param [key=" + key + ", value=" + debug_value
-						+ "]", Configuration.CHARSET_DEFAULT,
-						Configuration.CHARSET_REMOTE);
+						+ "]",
+						config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+						config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 				input_params.put(key, value);
 			}
 			HttpMethod method_submit = htmlUtils.load(
 					config.getUrl(url_action), input_params, header_params,
 					"post");
-			String html_submit = htmlUtils.getResponseText(method_submit);
+			String html_submit = htmlUtils.getResponseText(method_submit,
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			HtmlCleaner hc_submit = new HtmlCleaner(html_submit);
 			hc_submit.clean();
 			String xml_submit = hc_submit.getXmlAsString();
@@ -477,7 +560,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			String url_allianz = config.getUrl(uri);
 			HttpMethod method_allianz = htmlUtils.load(url_allianz,
 					header_params);
-			String html_allianz = htmlUtils.getResponseText(method_allianz);
+			String html_allianz = htmlUtils.getResponseText(method_allianz,
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			HtmlCleaner hc_allianz = new HtmlCleaner(html_allianz);
 			hc_allianz.clean();
 			String xml_allianz = hc_allianz.getXmlAsString();
@@ -578,7 +662,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			String karte_url = config.getUrl(uri);
 			debug("<<< set-cookie = " + this.cookie);
 			HttpMethod method_karte = htmlUtils.load(karte_url, header_params);
-			String html_karte = htmlUtils.getResponseText(method_karte);
+			String html_karte = htmlUtils.getResponseText(method_karte, config
+					.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			String keywords_lmid2 = "<div id=\"lmid1\"><div id=\"lmid2\"><div class=\"dname\"><h1>";
 			int p_s_h1_keywords = html_karte.indexOf(keywords_lmid2)
 					+ "<div id=\"lmid1\"><div id=\"lmid2\">".length();
@@ -636,7 +721,8 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 			String url_spieler = config.getUrl(uri);
 			HttpMethod method_spieler = htmlUtils.load(url_spieler,
 					header_params);
-			String html_spieler = htmlUtils.getResponseText(method_spieler);
+			String html_spieler = htmlUtils.getResponseText(method_spieler,
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
 			HtmlCleaner hc_spieler = new HtmlCleaner(html_spieler);
 			hc_spieler.clean();
 			String xml_spieler = hc_spieler.getXmlAsString();
@@ -682,4 +768,27 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 		return spieler("/spieler.php?uid=" + uid);
 	}
+
+	/**
+	 * 
+	 */
+	public void run() throws Exception {
+
+		String taskDriver = this.config.getString("trobot.task.driver");
+		log.info("trobot.task.driver is " + taskDriver);
+		TrobotTask task = (TrobotTask) Class.forName(taskDriver).newInstance();
+		task.setConfig(this.config);
+		task.setTrobot(this);
+		this.run(task);
+	}
+
+	/**
+	 * 
+	 */
+	public void run(TrobotTask task) throws Exception {
+
+		Timer timer = new Timer();
+		timer.schedule(task, 0);
+	}
+
 }

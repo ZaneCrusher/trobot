@@ -32,13 +32,6 @@ public class HtmlUtils {
 
 	private static Log log = LogFactory.getLog(HtmlUtils.class);
 
-	private static HtmlUtils self = new HtmlUtils();
-
-	public static HtmlUtils getInstance() {
-
-		return self;
-	}
-
 	private HttpClient httpClient = new HttpClient();
 
 	private String userAgent = null;
@@ -128,12 +121,12 @@ public class HtmlUtils {
 		return method;
 	}
 
-	public String getResponseText(HttpMethod method) {
+	public String getResponseText(HttpMethod method, String remoteCharset) {
 
 		String responseText = null;
 		try {
 			InputStreamReader reader = new InputStreamReader(method
-					.getResponseBodyAsStream(), Configuration.CHARSET_REMOTE);
+					.getResponseBodyAsStream(), remoteCharset);
 			BufferedReader br = new BufferedReader(reader);
 			StringBuffer sb = new StringBuffer();
 			String nextLine;

@@ -15,21 +15,25 @@ import java.util.Map;
  */
 public interface Trobot {
 
+	String getId();
+
+	void setId(String id);
+
+	void init() throws Exception;
+
 	void debug(String message, String fromCharset, String toCharset);
 
 	void debug(String message);
-
-	boolean login() throws Exception;
 
 	boolean isPlus();
 
 	String getCookie();
 
+	boolean login() throws Exception;
+
 	InfoVillage getActiveVillage() throws Exception;
 
 	void setActiveVillage(String did) throws Exception;
-
-	void previewAllVillages() throws Exception;
 
 	InfoAllianz allianz(String uri) throws Exception;
 
@@ -44,5 +48,7 @@ public interface Trobot {
 	InfoKarte karte(String d, String c) throws Exception;
 
 	Map<String, InfoVillage> getVillages();
+
+	void run() throws Exception;
 
 }
