@@ -1,3 +1,5 @@
-trobot.task.driver=com.javaws.trobot.task.MarketExchangeTask
-trobot.task.time=2008-05-05\ 14\:00\:00
-trobot.task.village.did=145484
+#trobot.task.driver=com.javaws.trobot.task.MarketExchangeTask
+#trobot.task.time=2008-05-05\ 14\:00\:00
+#trobot.task.village.did=145484
+
+trobot.task.driver=com.javaws.trobot.task.VillagesReportTask
