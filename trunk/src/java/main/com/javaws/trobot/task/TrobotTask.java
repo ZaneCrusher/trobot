@@ -6,41 +6,21 @@
 
 package com.javaws.trobot.task;
 
-import java.util.Properties;
 import java.util.TimerTask;
 
+import com.javaws.trobot.Configuration;
 import com.javaws.trobot.Trobot;
 
 public abstract class TrobotTask extends TimerTask {
 
-	private TrobotTask() {
+	private Trobot trobot;
+
+	private Configuration config;
+
+	public TrobotTask() {
 
 		super();
 	}
-
-	public TrobotTask(Trobot trobot, Properties taskProps) {
-
-		this();
-		this.setTrobot(trobot);
-		this.setTaskProps(taskProps);
-	}
-
-	public TrobotTask(Trobot trobot) {
-
-		this();
-		this.setTrobot(trobot);
-		try {
-			Properties taskProps = new Properties();
-			taskProps.load(this.getClass().getResourceAsStream("/trobot.task"));
-			this.setTaskProps(taskProps);
-		} catch (Exception ex) {
-			this.setTaskProps(null);
-		}
-	}
-
-	private Trobot trobot;
-
-	private Properties taskProps;
 
 	/**
 	 * @return the trobot
@@ -60,20 +40,20 @@ public abstract class TrobotTask extends TimerTask {
 	}
 
 	/**
-	 * @return the taskProps
+	 * @return the config
 	 */
-	public Properties getTaskProps() {
+	public Configuration getConfig() {
 
-		return taskProps;
+		return config;
 	}
 
 	/**
-	 * @param taskProps
-	 *            the taskProps to set
+	 * @param config
+	 *            the config to set
 	 */
-	public void setTaskProps(Properties taskProps) {
+	public void setConfig(Configuration config) {
 
-		this.taskProps = taskProps;
+		this.config = config;
 	}
 
 }
