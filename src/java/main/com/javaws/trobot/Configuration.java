@@ -63,6 +63,7 @@ public class Configuration {
 		try {
 			log.info("load trobot properties: " + classPath + " ...");
 			this.props.load(Configuration.class.getResourceAsStream(classPath));
+			this.props.putAll(System.getProperties());
 		} catch (IOException ioex) {
 			log.fatal("trobot properties load failed!");
 		}
