@@ -26,13 +26,16 @@ public class Main {
 
 		log.info("use trobot driver: " + driver);
 
-		String id = "test";
+		String id = "test"; // TODO
 
 		Trobot trobot = (Trobot) Class.forName(driver).newInstance();
 
 		trobot.setId(id);
+
 		trobot.init();
-		trobot.login();
+
+		// trobot.login();
+
 		trobot.run();
 
 	}
