@@ -539,7 +539,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 	public InfoAllianz allianz(Document page) throws Exception {
 
-		// TODO Auto-generated method stub
+		// TODO not implemented
 		return null;
 	}
 
@@ -642,7 +642,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 	public InfoKarte karte(Document page) throws Exception {
 
-		// TODO Auto-generated method stub
+		// TODO not implemented
 		return null;
 	}
 
@@ -769,26 +769,144 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		return spieler("/spieler.php?uid=" + uid);
 	}
 
+	public void send(String username, String subject, String message) {
+
+		Configuration config = this.getConfig();
+		try {
+			String url_test = config.getUrl("/nachrichten.php?t=1");
+			Map<String, String> input_params = new LinkedHashMap<String, String>();
+			Map<String, String> header_params = new LinkedHashMap<String, String>();
+			header_params.put("Cookie", this.getCookie());
+			HttpMethod method_test = htmlUtils.load(url_test, input_params,
+					header_params, "post");
+			String html_test = htmlUtils.getResponseText(method_test, config
+					.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
+			HtmlCleaner hc_test = new HtmlCleaner(html_test);
+			hc_test.clean();
+			Document xml_test = htmlUtils.getResponseDocument(hc_test
+					.getXmlAsString());
+			String keyword = ((Element) xml_test
+					.selectSingleNode("//input[@name=\"c\"]"))
+					.attributeValue("value");
+			String url_pm = config.getUrl("/nachrichten.php");
+			this.debug("<<< post url " + url_pm);
+			input_params = new LinkedHashMap<String, String>();
+			header_params = new LinkedHashMap<String, String>();
+			input_params.put("c", keyword);
+			// input_params.put("c", "ae3");
+			input_params.put("an", username);
+			input_params.put("be", subject);
+			input_params.put("t", "2");
+			input_params.put("message", message);
+			for (String key : input_params.keySet()) {
+				String debug_value = input_params.get(key);
+				this.debug("<<< post param [key=" + key + ", value="
+						+ debug_value + "]",
+						config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+						config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
+				// trobot.debug("<<< post param [key=" + key + ", value="
+				// + debug_value + "]", Configuration.CHARSET_DEFAULT,
+				// Configuration.CHARSET_REMOTE);
+			}
+			header_params.put("accept-charset", "utf-8");
+			header_params.put("Cookie", this.getCookie());
+			HttpMethod method_pm = htmlUtils.load(url_pm, input_params,
+					header_params, "post");
+			String html_pm = htmlUtils.getResponseText(method_pm, config
+					.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
+			HtmlCleaner hc_pm = new HtmlCleaner(html_pm);
+			hc_pm.clean();
+			/*
+			 * <p class="txt_menue"> <a href="nachrichten.php">收件箱</a> | <a
+			 * href="nachrichten.php?t=1">撰写</a> | <a
+			 * href="nachrichten.php?t=2">已发送</a></p><p class="c5"><b>AntiSpam:</b>
+			 * Please wait 10 minutes then try again</p><form method="post"
+			 * action="nachrichten.php" name="msg">
+			 */
+		} catch (Exception ex) {
+			log.error("send pm to user[" + username + "] errors: "
+					+ ex.getMessage());
+		}
+	}
+
 	/**
-	 * 
+	 * @see Trobot#send(String, String, String)
+	 */
+	public void invite(String username) {
+
+		try {
+			String url_invite = config.getUrl("/allianz.php");
+			this.debug("<<< post url " + url_invite);
+			Map<String, String> input_params = new LinkedHashMap<String, String>();
+			Map<String, String> header_params = new LinkedHashMap<String, String>();
+			input_params.put("a", "4");
+			input_params.put("o", "4");
+			input_params.put("s", "5");
+			input_params.put("s1", "ok");
+			input_params.put("a_name", username);
+			for (String key : input_params.keySet()) {
+				String debug_value = input_params.get(key);
+				this.debug("<<< post param [key=" + key + ", value="
+						+ debug_value + "]",
+						config.getCharsets()[Configuration.CHARSET_DEFAULT_ID],
+						config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
+				// trobot.debug("<<< post param [key=" + key + ", value="
+				// + debug_value + "]", Configuration.CHARSET_DEFAULT,
+				// Configuration.CHARSET_REMOTE);
+			}
+			header_params.put("accept-charset", "utf-8");
+			header_params.put("Cookie", this.getCookie());
+			HttpMethod method_invite = htmlUtils.load(url_invite, input_params,
+					header_params, "post");
+			String html_invite = htmlUtils.getResponseText(method_invite,
+					config.getCharsets()[Configuration.CHARSET_REMOTE_ID]);
+			HtmlCleaner hc_invite = new HtmlCleaner(html_invite);
+			hc_invite.clean();
+			System.out.println(hc_invite.getXmlAsString());
+		} catch (Exception ex) {
+			log.error("send invite to user[" + username + "] errors: "
+					+ ex.getMessage());
+		}
+	}
+
+	/**
+	 * @see Trobot#run()
 	 */
 	public void run() throws Exception {
 
 		String taskDriver = this.config.getString("trobot.task.driver");
-		log.info("trobot.task.driver is " + taskDriver);
+		String taskTime = this.config.getString("trobot.task.time");
+		if (null == taskDriver) {
+			log.info("no task defined !");
+			return;
+		}
+		log.info("use trobot task driver: " + taskDriver);
+		log.info("use trobot task time: " + taskTime);
+		Date date = null;
+		if (null != taskTime && !"0".equals(taskTime)
+				&& !"now".equals(taskTime)) {
+			date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(taskTime);
+		}
 		TrobotTask task = (TrobotTask) Class.forName(taskDriver).newInstance();
 		task.setConfig(this.config);
 		task.setTrobot(this);
-		this.run(task);
+		this.run(task, date);
+		if (null != task.getNextTask()) {
+			// TODO run next task
+		}
 	}
 
 	/**
-	 * 
+	 * Trobot Task Run Method
 	 */
-	public void run(TrobotTask task) throws Exception {
+	public void run(TrobotTask task, Date date) throws Exception {
 
 		Timer timer = new Timer();
-		timer.schedule(task, 0);
+		if (null == date) {
+			timer.schedule(task, 0);
+		} else {
+			timer.schedule(task, date);
+		}
 	}
 
 }

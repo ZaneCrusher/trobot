@@ -17,6 +17,8 @@ public abstract class TrobotTask extends TimerTask {
 
 	private Configuration config;
 
+	private TrobotTask nextTask;
+
 	public TrobotTask() {
 
 		super();
@@ -54,6 +56,23 @@ public abstract class TrobotTask extends TimerTask {
 	public void setConfig(Configuration config) {
 
 		this.config = config;
+	}
+
+	/**
+	 * @return the nextTask
+	 */
+	public TrobotTask getNextTask() {
+
+		return nextTask;
+	}
+
+	/**
+	 * @param nextTask
+	 *            the nextTask to set
+	 */
+	public void setNextTask(TrobotTask nextTask) {
+
+		this.nextTask = nextTask;
 	}
 
 }

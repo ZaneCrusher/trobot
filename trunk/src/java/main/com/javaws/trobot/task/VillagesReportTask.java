@@ -6,14 +6,17 @@
 
 package com.javaws.trobot.task;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.javaws.trobot.InfoVillage;
 import com.javaws.trobot.Trobot;
 
 public class VillagesReportTask extends TrobotTask {
 
-	public void previewAllVillages() throws Exception {
+	private static Log log = LogFactory.getLog(VillagesReportTask.class);
 
-		Trobot trobot = this.getTrobot();
+	public void previewAllVillages(Trobot trobot) throws Exception {
 
 		for (String did : trobot.getVillages().keySet()) {
 			trobot.setActiveVillage(did);
@@ -25,12 +28,17 @@ public class VillagesReportTask extends TrobotTask {
 	@Override
 	public void run() {
 
+		Trobot trobot = this.getTrobot();
+
 		try {
-			this.previewAllVillages();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if (trobot.login()) {
+				this.previewAllVillages(trobot);
+			}
+			log.info("run task done ;-)");
+		} catch (Exception ex) {
+			log.error("run task failed...", ex);
 		}
+
 	}
 
 }

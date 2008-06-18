@@ -12,6 +12,7 @@
 	<property name="lib.dir" value="${basedir}/lib" />
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="out.dir" value="${basedir}/out" />
+	<property name="dist.dir" value="${basedir}/dist" />
 
 	<!-- Load Environment Properties -->
 	<property environment="env" />
@@ -37,13 +38,17 @@
 	<!-- Utilities -->
 	<patternset id="java.files.pattern" includes="**/*.java" />
 
+	<!-- charset -->
+	<property name="trobot.encoding.runtime" value="${file.encoding}" />
+	<property name="trobot.encoding.compile" value="utf-8" />
+
 	<!-- =================================================================== -->
 	<!-- Classpaths                                                          -->
 	<!-- =================================================================== -->
 
-	<!-- jtidy -->
-	<path id="jtidy.classpath">
-		<fileset dir="${lib.dir}" includes="jtidy-*.jar" />
+	<!-- htmlcleaner -->
+	<path id="htmlcleaner.classpath">
+		<fileset dir="${lib.dir}" includes="htmlcleaner-*.jar" />
 	</path>
 
 	<!-- dom4j -->
@@ -65,7 +70,7 @@
 	<!-- build -->
 	<path id="build.classpath">
 		<path refid="commons.classpath" />
-		<path refid="jtidy.classpath" />
+		<path refid="htmlcleaner.classpath" />
 		<path refid="dom4j.classpath" />
 		<fileset dir="${lib.dir}" includes="log4j-*.jar" />
 	</path>
@@ -116,7 +121,7 @@
 		       debug="${compile.debug}"
 		       deprecation="${compile.deprecation}"
 		       optimize="${compile.optimize}"
-		       encoding="${file.encoding}">
+		       encoding="${trobot.encoding.compile}">
 			<classpath>
 				<path refid="build.classpath" />
 			</classpath>
@@ -132,7 +137,7 @@
 		       debug="${compile.debug}"
 		       deprecation="${compile.deprecation}"
 		       optimize="${compile.optimize}"
-		       encoding="${file.encoding}">
+		       encoding="${trobot.encoding.compile}">
 			<classpath>
 				<path refid="build.classpath" />
 				<path refid="junit.classpath" />
@@ -155,7 +160,30 @@
 	<!-- =================================================================== -->
 	<target name="package"
 	        description="defines custom tasks"
-	        depends="compile-main">
+	        depends="clean, compile-main">
+		<echo level="info">Packaging trobot.jar</echo>
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}/jar" />
+		<tstamp>
+			<format property="package.time" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+		<jar destfile="${dist.dir}/jar/trobot.jar">
+			<fileset dir="${out.java.main.dir}" />
+			<fileset dir="${src.java.main.dir}"
+			         includes="**/*.properties"
+			         excludes="**/trobot-*.properties" />
+			<fileset dir="${src.java.main.dir}" includes="**/*.task" />
+		</jar>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Clean Files                                                         -->
+	<!-- =================================================================== -->
+	<target name="clean" description="Clean Files">
+		<echo level="info">Clean Files</echo>
+		<delete dir="${out.dir}" />
+		<delete dir="${dist.dir}" />
 	</target>
 
 
@@ -166,7 +194,7 @@
 	        description="defines custom tasks"
 	        depends="compile-main, compile-test">
 		<java classname="com.javaws.trobot.Main" fork="yes">
-			<jvmarg value="-Dfile.encoding=${file.encoding}" />
+			<jvmarg value="-Dfile.encoding=${trobot.encoding.runtime}" />
 			<arg value="start" />
 			<classpath>
 				<path refid="out.java.test.classpath" />
@@ -185,7 +213,7 @@
 	        description="defines custom tasks"
 	        depends="compile-main, compile-test">
 		<junit printsummary="yes" fork="yes" haltonfailure="yes">
-			<jvmarg value="-Dfile.encoding=${file.encoding}" />
+			<jvmarg value="-Dfile.encoding=${trobot.encoding.runtime}" />
 			<classpath>
 				<path refid="out.java.test.classpath" />
 				<path refid="out.java.main.classpath" />
