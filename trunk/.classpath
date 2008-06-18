@@ -8,10 +8,8 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxen-1.1-beta-7.jar"/>
-	<classpathentry kind="lib" path="lib/jtidy-r8-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
-	<classpathentry kind="lib" path="lib/junit-3.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/htmlcleaner-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxen-1.1-beta-7.jar"/>
 	<classpathentry kind="output" path=".classes"/>
 </classpath>
