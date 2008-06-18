@@ -167,8 +167,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 		if (this.config.getBoolean("trobot.output")) {
 			String outpath = this.config.getString("trobot.data.home");
 			String filename = "/trobot-" + this.id + ".log";
-			String filepath = outpath + System.getProperty("file.separator")
-					+ filename;
+			String filepath = outpath + Configuration.FILE_SEPARATOR + filename;
 			File outfile = new File(filepath);
 			if (!outfile.exists()) {
 				if (outfile.createNewFile()) {
@@ -232,7 +231,7 @@ public class TrobotHtmlCleanerImpl implements Trobot {
 
 		if (debug) {
 			try {
-				String line = message + System.getProperty("line.separator");
+				String line = message + Configuration.LINE_SEPARATOR;
 				if (writer instanceof FileWriter) {
 					System.out.print(line);
 				}
