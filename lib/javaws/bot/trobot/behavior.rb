@@ -249,6 +249,64 @@ module TRAVIAN
     def to_s
       return "market #{home}/#{total}, [#{carry}], lv#{lv}"
     end
+    # trade to NPC
+    def trade(res, summe, max123, max4)
+      rts = [:w, :c, :i, :r]
+      sum = 0
+      emp = 0
+      rts.each do |t|
+        i = rts.index(t)
+        s = res[i]
+        sum = sum + s.to_i if !s.nil?
+        emp = emp + 1 if s.nil?
+      end
+      ave = (summe - sum) / emp
+      res.collect!{|s| s = ave if s.nil?; s = s if !s.nil?}
+      return average(res, summe, max123, max4)
+    end
+    # total
+    def total(res)
+      return res[0] + res[1] + res[2] + res[3]
+    end
+    # average 
+    def average(res, summe, max123, max4)
+      while(true)
+        res4 = res[3]
+        res123 = [res[0],res[1],res[2]]
+        rst = summe - total(res)
+        ave = rst / 4
+        eva = rst - (ave * 4)
+        sum = 0
+        i = 0
+        res123.each do |s|
+          z = 0
+          o = s + ave
+          # o > max123
+          z = o - max123 if o > max123
+          o = o - z
+          # o < 0
+          z = z - (0 - o) if o < 0
+          o = 0 if o < 0
+          if (o + eva) <= max123
+            z = z + eva
+            o = o + eva
+            eva = 0
+          end
+          sum = sum + z
+          res123[i] = o
+          i = i + 1
+        end
+        ser4 = res4 + ave + eva
+        sum  = sum + (ser4 - max4) if ser4 > max4
+        ser4 = max4 if ser4 > max4
+        res  = [res123, ser4].flatten
+        # puts res.join("|")
+        # puts summe
+        # puts sum
+        break if sum == 0
+      end
+      return res
+    end
   end
 
   class Dorf1
