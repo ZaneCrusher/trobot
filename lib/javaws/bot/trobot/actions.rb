@@ -53,6 +53,7 @@ class HomeAction < BaseAction
     uri = suri
     url = "#{uri}?newdid=#{did}"
     @browser.request(url)
+    init
   end
   def res
     # vlist if @robot.spieler.village.nil?
@@ -71,10 +72,11 @@ class HomeAction < BaseAction
   def tlist
     # troop
   end
-  def current_v(v, h1 = nil)
-    return if h1.nil?
-    v.name = h1.inner_html
+  def current_v(v, div = nil)
+    return if div.nil?
     begin
+      h1   = div.search("h1")[0]
+      v.name = h1.inner_html
       divid = div.inner_html.match(/\<\/map\>\s*\n\s*\<div\ (.*)\>\s*\n\s*\<img/)[1]
       ktype = divid.match(/id=\"(\w+)\"/)[1]
       ktype = ktype.to_sym if !ktype.nil?
@@ -103,31 +105,31 @@ class HomeAction < BaseAction
     return build
   end
   def blist
-    before
+    # before
     v = nil
     begin
       div  = @browser.search("div#content")[0]
-      h1   = div.search("h1")[0]
-      v    = TRAVIAN::Village.new # @robot.spieler.village
-      current_v(v, h1)
+      # v  = TRAVIAN::Village.new 
+      v    = @robot.spieler.village
+      current_v(v, div)
       begin
         div.search("div.village_map/map#rx/area") do |elem|
-          b = build(elem) 
-          v.builds[b.id] = b
+          b = build(elem)
+          v.builds[b.id] = b if !b.nil?
         end
       rescue
       end
       begin
         div.search("map#map2/area") do |elem|
           b = build(elem) 
-          v.builds[b.id] = b
+          v.builds[b.id] = b if !b.nil?
         end
       rescue
       end
       begin
         div.search("map#map1/area") do |elem|
           b = build(elem) 
-          v.builds[b.id] = b
+          v.builds[b.id] = b if !b.nil?
         end
       rescue
       end
@@ -137,7 +139,7 @@ class HomeAction < BaseAction
     return v
   end
   def vlist
-    before
+    # before
     begin
       div = @browser.search("div#vlist")[0]
       raise "not login" if div.nil?
@@ -149,6 +151,8 @@ class HomeAction < BaseAction
         ov = @robot.spieler.villages[v.id]
         @robot.spieler.villages[v.id] = v if ov.nil?
         next if ov.nil?
+        ov.k = v.k
+        # ov
         ov.update v
 =end
       end
@@ -160,7 +164,7 @@ class HomeAction < BaseAction
     return @robot.spieler.villages
   end
   def stime
-    before
+    # before
     ltime = 0
     tp1 = @browser.search("span#tp1")[0].inner_html.match(/\d+\:\d+\:\d+/)[0]
     @robot.timer(tp1)
@@ -168,15 +172,24 @@ class HomeAction < BaseAction
   end
   def before
     data = nil
+    last = @browser.history[0] if !@browser.history.nil?
+    uri  = suri
     data = @browser.html \
       if !@browser.html.nil? && !@browser.search("div#sright").nil?
+    data = nil \
+      if last.nil? || last.match(uri).nil?
+    @browser.request(uri) if data.nil?
+  end
+  def init
+    vlist
+    res
+    blist
+    me
+    stime
   end
   def on
     super
-    return if !@html.nil?
-    uri = suri
-    @browser.request(uri) if @browser.html.nil?
-    vlist
+    init
     exec
   end
   def exec
@@ -188,7 +201,9 @@ class HomeAction < BaseAction
     self.send m if self.respond_to? m
   end
   def suri
-    return "/dorf1.php"
+    last = @browser.history[0] if !@browser.history.nil?
+    last = last.match(/(\/\w+\.php)/)[1] if !last.nil?
+    return last || "/dorf1.php"
   end
 end
 
@@ -306,7 +321,8 @@ class Dorf1Action < HomeAction
     vlist
     resources
   end
-  def after
+  def suri
+    return "/dorf1.php"
   end
 end
 
@@ -324,19 +340,14 @@ class ShowAction < HomeAction
     u  = @robot.spieler
     vs = u.villages
     v  = u.village
-    rs = res # v.resources
-    bsv= blist # v.builds
+    rs = v.resources # res
+    bsv= v  # blist
     if opt[:all] || opt[:spieler] || opt[:u]
       @log.p "> show me.uid: #{me}"
     end
     if opt[:all] || opt[:vs] || opt[:villages]
       vs.each do |k, v|
         @log.p @browser.conv("> show #{v}")
-      end
-    end
-    if opt[:all] || opt[:res] || opt[:resources]
-      [:lumber, :clay, :iron, :crop].each do |t|
-        @log.p "> show #{t}:\t#{rs[t]}"
       end
     end
     if opt[:all] || opt[:bs] || opt[:builds]
@@ -346,13 +357,157 @@ class ShowAction < HomeAction
         @log.p @browser.conv("> show #{bs[k]}")
       end
     end
+    if opt[:all] || opt[:res] || opt[:resources]
+      [:lumber, :clay, :iron, :crop].each do |t|
+        @log.p "> show #{t}:\t#{rs[t]}"
+      end
+    end
+    if opt[:all] || opt[:market]
+      @log.p "> show #{bsv.market}"
+    end
     timer = @robot.timer
     timer.stime = self.stime
     t = timer.time2str(timer.now)
     @log.p "> time #{t}"
   end
   def on
-    show
+    # begin
+      show
+    # rescue
+       
+    # end
+  end
+end
+
+class BuildAction < HomeAction
+  attr :gid, true
+  attr :build, true
+  def buri
+    return "/build.php"
+  end
+  def suri
+    gid = self.gid
+    return "#{buri}?gid=#{gid}"
+  end
+  def gid
+    return @gid || @options[:gid]
+  end
+  def parse
+    # TODO
+  end
+  def init
+    vlist
+    res
+    me
+    stime
+    parse
+  end
+end
+
+class MarketAction < BuildAction
+  FORM_NAME = "snd"
+  FORM_ACTION = "build.php"
+  # FORM_HIDDEN = {:id => 33}
+  def gid
+    @gid = TRAVIAN::BUILDS[:marketplace][:gid] if @gid.nil?
+    return @gid
+  end
+  def trade(lumber = nil, clay = nil, iron = nil, crop = nil)
+    uri = "#{suri}&t=3"
+    @browser.request(uri)
+    expr = /summe\=(\d+).*max123\=(\d+).*max4\=(\d+)/
+    summe = 0
+    max123 = 0
+    max4 = 0
+    mexpr = @browser.html.match(expr)
+    summe = mexpr[1].to_i if !mexpr.nil?
+    max123 = mexpr[2].to_i if !mexpr.nil?
+    max4 = mexpr[3].to_i if !mexpr.nil?
+    opt = @options
+    if (!@options[:trade].nil?)
+     params = @options[:trade].split(/\,|\|/)
+     i = 0
+     [:lumber,:clay,:iron,:crop].each do |t|
+       p = nil
+       begin
+         s = params[i]
+         p = s.to_i if s.match(/\d+/)
+       rescue
+         p = nil
+       end
+       opt[t] = p
+       i = i + 1
+     end
+    end
+    w = opt[:lumber] if lumber.nil?
+    c = opt[:clay] if clay.nil?
+    i = opt[:iron] if iron.nil?
+    r = opt[:crop] if crop.nil?
+    total = summe
+    average(w,c,i,r,total,max123,max4)
+  end
+  def average(w,c,i,r,total,max123,max4)
+    @log.p "> show input: [#{w}|#{c}|#{i}|#{r}], #{total}, #{max123}, #{max4}"
+    sum = total
+    ave = 0
+    ept = 0
+    old = [w,c,i,r]
+    nnn = [nil,nil,nil,nil]
+    cur = 0
+    over = false
+    old.each do |s|
+      cur = cur + 1
+      z = nil
+      if s.nil?
+        ept = ept + 1
+      else
+        z = s
+        ave = ave + s
+        z = max123 if cur != 4 && z > max123
+        z = max4 if cur == 4 && z > max4
+      end
+      nnn[cur-1] = z
+      sum = sum - z if !z.nil?
+    end
+    aver = 0
+    aver = (sum / ept) if ept > 0
+    cur = 0
+    nnn.each do |s|
+      nnn[cur] = aver if s.nil?
+      cur = cur + 1
+    end
+    @log.p "> show average: [#{nnn.join('|')}], #{total}"
+  end
+  def parse
+  end
+  def carry_to
+    div = @browser.search("div#content")[0]
+    h1  = div.search("h1")[0]
+    lv  = h1.inner_html.match(/\d+$/)[0]
+    # form = div.search("form input")
+    tables = div.search("table[@class='f10']")
+    tab1 = tables[0]
+    tab2 = tables[1]
+    expr = /(\d+)\/(\d+)/
+    mtd0 = tab2.search("td")[0].inner_html.match(expr)
+    home  = mtd0[1].to_i
+    total = mtd0[2].to_i
+    away  = total - home
+    carry = nil
+    div.search("p/b") do |elem|
+      carry = elem.inner_html.to_i \
+        if elem.inner_html.match(/\d+/)
+    end
+    market = TRAVIAN::Market.new
+    market.home = home
+    market.total = total
+    market.away = away
+    market.gid = @gid
+    market.lv = lv
+    market.carry = carry
+    @build = market
+    v = @robot.spieler.village
+    v.market = market
   end
 end
 
