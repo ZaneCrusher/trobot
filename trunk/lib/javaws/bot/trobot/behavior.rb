@@ -6,7 +6,9 @@ class Behavior
   attr :world, true
   attr :spieler, true
   def actions
-    return [:reset, :show, :home, :dorf1, :dorf2, :login, :logout]
+    return [:reset, :show, :home \
+      , :dorf1, :dorf2, :login, :logout \
+      , :market ]
   end
   def timer(stime = nil)
     @timer = TRAVIAN::Timer.new if @timer.nil?
@@ -165,6 +167,7 @@ module TRAVIAN
     attr :builds, true
     attr :resources, true
     attr :capital, true
+    attr :market, true
     attr :sel, true
     attr :ktype, true
     def to_s
@@ -174,6 +177,7 @@ module TRAVIAN
       return "#{f} [#{t}] #{@id}, #{k.to_pos}, #{@name}"
     end
 =begin
+    # TODO
     def update(v = nil)
       return if v.nil?
       k = v.k
@@ -235,6 +239,16 @@ module TRAVIAN
   end
 
   class Allianz
+  end
+
+  class Market < Build
+    attr :total, true
+    attr :away, true
+    attr :home, true
+    attr :carry, true
+    def to_s
+      return "market #{home}/#{total}, [#{carry}], lv#{lv}"
+    end
   end
 
   class Dorf1

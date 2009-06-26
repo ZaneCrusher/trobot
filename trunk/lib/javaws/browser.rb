@@ -118,7 +118,7 @@ module JAVAWS
       if(!resp.response['set-cookie'].nil?)
         # @cookie = resp.response['set-cookie']
         @cookie = combine_cookie(resp.response['set-cookie'], @cookie)
-        @log.p("< sess #{@cookie}")
+        @log.p("< sess #{@cookie}") if is_debug?
       end
       @history.insert(0, url)
       @resp, @html = resp, data
@@ -147,7 +147,7 @@ module JAVAWS
         # ohash.delete(k) if ['expires', 'path', 'domain'].index(k)
         ohash.delete(k) if ['_uid', 'SERVERID', '_user'].index(k).nil?
       end
-      puts "aaaaaaaa => " + ohash.keys.join(";")
+      # puts "aaaaaaaa => " + ohash.keys.join(";")
       return ohash.values.join("; ").gsub(/path\=\;*/, '')
     end
     def search(expr = nil, data = nil)
