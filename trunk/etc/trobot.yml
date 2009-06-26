@@ -4,7 +4,7 @@
 
 trobot:
   username: 糨糊罐罐
-  password: 
+  password: 123456
   describe: JAVAWS::BOT::TROBOT
   cachedir: ${HOME}/.trobot
 
