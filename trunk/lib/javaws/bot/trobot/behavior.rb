@@ -1,0 +1,267 @@
+# tasks.rb
+
+class Behavior
+  include JAVAWS::BOT::BEHAVIOR
+  attr :timer, true
+  attr :world, true
+  attr :spieler, true
+  def actions
+    return [:reset, :show, :home, :dorf1, :dorf2, :login, :logout]
+  end
+  def timer(stime = nil)
+    @timer = TRAVIAN::Timer.new if @timer.nil?
+    @timer.stime = stime
+    return @timer
+  end
+  def spieler
+    @spieler = TRAVIAN::Spieler.new if @spieler.nil?
+    return @spieler
+  end
+  def world
+    @world = TRAVIAN::World.new if @world.nil?
+    return @world
+  end
+end
+
+module TRAVIAN
+  BUILDS = {
+    :lumber	 => {:gid => 1},
+    :clay	 => {:gid => 2},
+    :iron	 => {:gid => 3},
+    :crop	 => {:gid => 4},
+    :sawmill	 => {:gid => 5},
+    :brickyard	 => {:gid => 6},
+    :ironFoundry => {:gid => 7},
+    :grainMill	 => {:gid => 8},
+    :bakery	 => {:gid => 9},
+    :warehouse	 => {:gid => 10},
+    :granary	 => {:gid => 11},
+    :blacksmith	 => {:gid => 12},
+    :armoury	 => {:gid => 13},
+    :tournamentSquare	 => {:gid => 14},
+    :mainBuilding	 => {:gid => 15},
+    :rallyPoint	 => {:gid => 16},
+    :marketplace	 => {:gid => 17},
+    :embassy	 => {:gid => 18},
+    :barracks	 => {:gid => 19},
+    :stable	 => {:gid => 20},
+    :workshop	 => {:gid => 21},
+    :academy	 => {:gid => 22},
+    :cranny	 => {:gid => 23},
+    :townhall	 => {:gid => 24},
+    :residence	 => {:gid => 25},
+    :palace	 => {:gid => 26},
+    :treasury	 => {:gid => 27},
+    :tradeOffice	 => {:gid => 28},
+    :greatBarrack	 => {:gid => 29},
+    :greatStable	 => {:gid => 30},
+    :citywall	 => {:gid => 31},
+    :earthwall	 => {:gid => 32},
+    :palisade	 => {:gid => 33},
+    :stonemason	 => {:gid => 34},
+    :brewery	 => {:gid => 35},
+    :trapper	 => {:gid => 36},
+    :herosMansion	 => {:gid => 37},
+    :greatWarehouse	 => {:gid => 38},
+    :greatGranary	 => {:gid => 39},
+    :WW	 => {:gid => 40},
+    :horsedt	 => {:gid => 41}
+  }
+
+  class Timer
+    attr :ltime, true #localtime
+    attr :stime, true #servertime
+    def stime=(stime = nil)
+      @stime = str2time(stime)
+      @ltime = Time.new
+      return @stime
+    end
+    def now
+      offset = @ltime - @stime
+      return (Time.new + offset)
+    end
+    def time(offset = nil, stime = nil)
+      stime   = @stime if stime.nil?
+      stime   = str2time(stime) 
+      offset  = 0 if offset.nil?
+      seconds = 3600 * offset
+      time    = stime + seconds
+      return time
+    end
+    def time2str(time = nil)
+      time = @stime if time.nil?
+      time = Time.new if time.nil?
+      return time.strftime('%Y-%m-%d %H:%M:%S')
+    end
+    def str2time(strtime = nil)
+      return Time.new if strtime.nil?
+      return strtime if strtime.class == Time
+      strdate = Time.new.strftime('%Y-%m-%d')
+      strtime = "#{strdate} #{strtime}" if strtime.match(/(\d+)\:(\d+)\:(\d+)/)
+      m = strtime.match(/(\d+)\-(\d+)\-(\d+)\ (\d+)\:(\d+)\:(\d+)/)
+      t = Time.local(m[1], m[2], m[3], m[4], m[5], m[6])
+      return t
+    end
+  end
+ 
+  class Resource
+    attr :c, true # current
+    attr :m, true # max
+    attr :i, true # increase
+    def desc
+      return self.class.to_s.downcase
+    end
+    def itime
+      neg = (i < 0)
+      r = m - c 
+      r = c if neg
+      sprintf("%.3f", r.to_f/i)
+    end
+    def to_s
+      return "#{c}/#{m}, #{i}/h, #{itime}h"
+    end
+  end
+  
+  class Lumber < Resource
+  end
+
+  class Clay < Resource
+  end
+
+  class Iron < Resource
+  end
+
+  class Crop < Resource
+  end
+
+  class Karte
+    TYPES = [:t6, :t9, :t15, :lumber5, :clay5, :iron5, :crop5]
+    attr :x, true # pos x
+    attr :y, true # pos y
+    attr :t, true # type
+    attr :v, true # is village
+    attr :c, true # param c
+    attr :d, true # param d or id
+    def to_pos
+      return "(N/A|N/A)" if @x.nil? || @y.nil?
+      return "(#{@x}|#{@y})"
+    end
+  end
+
+  class Build
+    attr :id, true
+    attr :gid, true
+    attr :lv, true
+    attr :name, true
+    def to_s
+      return "#{id}, #{name} #{lv}"
+    end
+  end
+
+  class Village
+    attr :k, true
+    attr :id, true
+    attr :name, true
+    attr :builds, true
+    attr :resources, true
+    attr :capital, true
+    attr :sel, true
+    attr :ktype, true
+    def to_s
+      f = @sel ? "X" : "O"
+      t = @ktype || "??"
+      k = @k || Karte.new
+      return "#{f} [#{t}] #{@id}, #{k.to_pos}, #{@name}"
+    end
+=begin
+    def update(v = nil)
+      return if v.nil?
+      k = v.k
+      id = v.id
+      name = v.name
+      builds.merge v.builds
+      # resources.merge v.resources
+      v.resources.each do |k, r|
+        @resources[k] = r if !r.nil? && !r.i.nil?
+      end
+      capital = v.capital
+      sel = v.sel
+      ktype = v.ktype if !v.ktype.nil?
+    end
+=end
+    def resources
+      @resources = {
+        :lumber  => Lumber.new,
+        :clay    => Clay.new,
+        :iron    => Iron.new,
+        :crop    => Crop.new
+      } if @resources.nil?
+      return @resources
+    end
+    def builds
+      @builds = {} if @builds.nil?
+      return @builds
+    end
+    def res
+      return resources
+    end
+  end
+
+  class Spieler
+    attr :uid, true
+    attr :villages, true
+    def villages
+      @villages = {} if @villages.nil?
+      return @villages
+    end
+    def village
+      @villages.each do |did, v|
+        return v if v.sel
+      end
+    end
+    def next_did
+      r = nil
+      f = false
+      2.times do
+        break if !r.nil?
+        @villages.each do |did, v|
+          r = did if f
+          break if !r.nil?
+          f = v.sel
+        end
+      end
+      return r
+    end
+  end
+
+  class Allianz
+  end
+
+  class Dorf1
+  end
+
+  class Dorf2
+  end
+
+  class Dorf3
+  end
+
+  class Build
+  end
+ 
+  class A2b
+  end
+
+  class World
+    attr :kartes, true
+    attr :villages, true
+    attr :allianz, true
+    attr :spielers, true
+    def initialize
+      @kartes = {}
+      @villages = {}
+      @allianz = {}
+      @spielers = {}
+    end
+  end
+end
