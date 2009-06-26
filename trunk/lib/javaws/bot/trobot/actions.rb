@@ -192,12 +192,17 @@ class HomeAction < BaseAction
     init
     exec
   end
+  def refresh
+    uri = suri
+    @browser.request(uri)
+    init
+  end
   def exec
     options = @options || {}
     params = options.map{|k,v| [k.to_s, v.to_s]}.flatten
     return if params.nil? || params.length < 1
     m = params[0].to_sym
-    @log.p "# exec #{m} to #{self.class}"
+    @log.p "# exec #{m} of #{self.class}"
     self.send m if self.respond_to? m
   end
   def suri
@@ -444,39 +449,11 @@ class MarketAction < BuildAction
     i = opt[:iron] if iron.nil?
     r = opt[:crop] if crop.nil?
     total = summe
-    average(w,c,i,r,total,max123,max4)
-  end
-  def average(w,c,i,r,total,max123,max4)
-    @log.p "> show input: [#{w}|#{c}|#{i}|#{r}], #{total}, #{max123}, #{max4}"
-    sum = total
-    ave = 0
-    ept = 0
-    old = [w,c,i,r]
-    nnn = [nil,nil,nil,nil]
-    cur = 0
-    over = false
-    old.each do |s|
-      cur = cur + 1
-      z = nil
-      if s.nil?
-        ept = ept + 1
-      else
-        z = s
-        ave = ave + s
-        z = max123 if cur != 4 && z > max123
-        z = max4 if cur == 4 && z > max4
-      end
-      nnn[cur-1] = z
-      sum = sum - z if !z.nil?
-    end
-    aver = 0
-    aver = (sum / ept) if ept > 0
-    cur = 0
-    nnn.each do |s|
-      nnn[cur] = aver if s.nil?
-      cur = cur + 1
-    end
-    @log.p "> show average: [#{nnn.join('|')}], #{total}"
+    market = TRAVIAN::Market.new
+    f = [w,c,i,r].collect{|v|v='n/a' if v.nil?; v=v if !v.nil?}
+    @log.p "> mrkt trade: #{f.join('|')}, t=#{total}, m123=#{max123}, m4=#{max4}"
+    e = market.trade([w,c,i,r],total,max123,max4)
+    @log.p "< mrkt average: #{e.join('|')}, t=#{total}, m123=#{max123}, m4=#{max4}"
   end
   def parse
   end
