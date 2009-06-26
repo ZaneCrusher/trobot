@@ -1,0 +1,6 @@
+# ctest.task.yml
+
+# -*- encoding: utf-8 -*-
+
+tasks:
+  :activation:

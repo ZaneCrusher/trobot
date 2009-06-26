@@ -1,0 +1,17 @@
+# JAVAWS::CRobot settings
+
+# -*- encoding: utf-8 -*-
+
+trobot:
+  username: 糨糊罐罐
+  password: 
+  describe: JAVAWS::BOT::TROBOT
+  cachedir: ${HOME}/.trobot
+
+browser: 
+  site: http://s11.travian.cn
+  cookie: 
+  timeout: 5000
+  charset: utf-8
+  ua: "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.11) Gecko/2009060215 Firefox/3.0.11"
+  debug: false
